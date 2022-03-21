@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 mod ast;
 mod lexer;
-mod span;
+mod parser;
 
 pub fn parse(_str: &str, _file_name: PathBuf) -> Result<ast::File, ()> {
     todo!()

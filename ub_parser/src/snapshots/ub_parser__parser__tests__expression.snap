@@ -1,0 +1,48 @@
+---
+source: ub_parser/src/parser.rs
+expression: r
+---
+(
+    Some(
+        File {
+            name: "ub_parser__parser__tests",
+            items: [
+                Expr(
+                    BinOp(
+                        BinOp {
+                            kind: Add,
+                            lhs: BinOp(
+                                BinOp {
+                                    kind: Div,
+                                    lhs: Literal(
+                                        Integer(
+                                            4,
+                                            1..2,
+                                        ),
+                                    ),
+                                    rhs: Call(
+                                        Call {
+                                            callee: Name(
+                                                "hallo",
+                                            ),
+                                            args: [],
+                                        },
+                                    ),
+                                    span: 0..0,
+                                },
+                            ),
+                            rhs: Literal(
+                                Integer(
+                                    5,
+                                    16..17,
+                                ),
+                            ),
+                            span: 0..0,
+                        },
+                    ),
+                ),
+            ],
+        },
+    ),
+    [],
+)

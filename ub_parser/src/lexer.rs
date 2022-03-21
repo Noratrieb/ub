@@ -1,6 +1,6 @@
 use logos::Logos;
 
-#[derive(Logos, Debug, PartialEq)]
+#[derive(Logos, Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Token<'a> {
     #[regex("//[^\n]*", logos::skip)]
     Comment,
