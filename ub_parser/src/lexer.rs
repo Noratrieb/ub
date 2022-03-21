@@ -48,8 +48,11 @@ pub enum Token {
     #[token("fn")]
     Fn,
 
+    #[regex(r"[a-zA-Z_]\w*")]
+    Ident(String),
+
     #[error]
-    #[regex(r"[ \t\n\r\f]+")]
+    #[regex(r"[ \t\n\r\f]+"), logos::skip]
     Error,
 }
 
