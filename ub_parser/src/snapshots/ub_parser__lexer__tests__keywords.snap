@@ -1,0 +1,14 @@
+---
+source: ub_parser/src/lexer.rs
+expression: tokens
+---
+[
+    Struct,
+    Fn,
+    Dot,
+    If,
+    Else,
+    While,
+    Loop,
+    Semi,
+]

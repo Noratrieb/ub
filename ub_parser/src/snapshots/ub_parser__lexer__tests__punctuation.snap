@@ -1,0 +1,31 @@
+---
+source: ub_parser/src/lexer.rs
+expression: tokens
+---
+[
+    BraceO,
+    BraceC,
+    BracketO,
+    BracketC,
+    ParenO,
+    ParenC,
+    Dot,
+    Comma,
+    Semi,
+    Eq,
+    EqEq,
+    BangEq,
+    GreaterEq,
+    LessEq,
+    Less,
+    Greater,
+    Plus,
+    Minus,
+    Asterisk,
+    Slash,
+    Or,
+    OrOr,
+    And,
+    AndAnd,
+    Caret,
+]

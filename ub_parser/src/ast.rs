@@ -137,6 +137,7 @@ pub enum BinOpKind {
     Or,
     BitAnd,
     BitOr,
+    Xor,
 }
 
 #[derive(Debug, Clone, PartialEq)]

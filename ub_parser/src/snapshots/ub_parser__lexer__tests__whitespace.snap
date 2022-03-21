@@ -1,0 +1,8 @@
+---
+source: ub_parser/src/lexer.rs
+expression: tokens
+---
+[
+    Dot,
+    Dot,
+]
