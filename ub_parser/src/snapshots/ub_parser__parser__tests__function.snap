@@ -1,6 +1,6 @@
 ---
 source: ub_parser/src/parser.rs
-assertion_line: 272
+assertion_line: 284
 expression: r
 ---
 (
@@ -10,9 +10,14 @@ expression: r
             items: [
                 FnDecl(
                     FnDecl {
-                        name: "main",
+                        name: "foo",
                         params: [],
-                        ret_ty: None,
+                        ret_ty: Some(
+                            Ty {
+                                span: 12..15,
+                                kind: U64,
+                            },
+                        ),
                         span: 0..2,
                         body: [
                             Expr(
@@ -22,13 +27,13 @@ expression: r
                                         lhs: Literal(
                                             Integer(
                                                 1,
-                                                12..13,
+                                                18..19,
                                             ),
                                         ),
                                         rhs: Literal(
                                             Integer(
-                                                4,
-                                                16..17,
+                                                5,
+                                                22..23,
                                             ),
                                         ),
                                         span: 0..0,

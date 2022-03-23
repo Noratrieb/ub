@@ -1,0 +1,39 @@
+---
+source: ub_parser/src/parser.rs
+assertion_line: 290
+expression: r
+---
+(
+    Some(
+        File {
+            name: "ub_parser__parser__tests",
+            items: [
+                StructDecl(
+                    StructDecl {
+                        name: "X",
+                        fields: [
+                            NameTyPair {
+                                name: "y",
+                                ty: Ty {
+                                    span: 14..17,
+                                    kind: U64,
+                                },
+                                span: 11..17,
+                            },
+                            NameTyPair {
+                                name: "x",
+                                ty: Ty {
+                                    span: 22..25,
+                                    kind: U64,
+                                },
+                                span: 19..25,
+                            },
+                        ],
+                        span: 0..0,
+                    },
+                ),
+            ],
+        },
+    ),
+    [],
+)

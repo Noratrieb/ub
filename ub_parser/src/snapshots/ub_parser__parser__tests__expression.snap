@@ -1,5 +1,6 @@
 ---
 source: ub_parser/src/parser.rs
+assertion_line: 278
 expression: r
 ---
 (
@@ -7,39 +8,49 @@ expression: r
         File {
             name: "ub_parser__parser__tests",
             items: [
-                Expr(
-                    BinOp(
-                        BinOp {
-                            kind: Add,
-                            lhs: BinOp(
-                                BinOp {
-                                    kind: Div,
-                                    lhs: Literal(
-                                        Integer(
-                                            4,
-                                            1..2,
+                FnDecl(
+                    FnDecl {
+                        name: "main",
+                        params: [],
+                        ret_ty: None,
+                        span: 0..2,
+                        body: [
+                            Expr(
+                                BinOp(
+                                    BinOp {
+                                        kind: Add,
+                                        lhs: BinOp(
+                                            BinOp {
+                                                kind: Div,
+                                                lhs: Literal(
+                                                    Integer(
+                                                        4,
+                                                        13..14,
+                                                    ),
+                                                ),
+                                                rhs: Call(
+                                                    Call {
+                                                        callee: Name(
+                                                            "hallo",
+                                                        ),
+                                                        args: [],
+                                                    },
+                                                ),
+                                                span: 0..0,
+                                            },
                                         ),
-                                    ),
-                                    rhs: Call(
-                                        Call {
-                                            callee: Name(
-                                                "hallo",
+                                        rhs: Literal(
+                                            Integer(
+                                                5,
+                                                28..29,
                                             ),
-                                            args: [],
-                                        },
-                                    ),
-                                    span: 0..0,
-                                },
-                            ),
-                            rhs: Literal(
-                                Integer(
-                                    5,
-                                    16..17,
+                                        ),
+                                        span: 0..0,
+                                    },
                                 ),
                             ),
-                            span: 0..0,
-                        },
-                    ),
+                        ],
+                    },
                 ),
             ],
         },

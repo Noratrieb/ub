@@ -5,7 +5,7 @@ type Span = Range<usize>;
 #[derive(Debug, Clone, PartialEq)]
 pub struct File {
     pub name: PathBuf,
-    pub items: Vec<Stmt>, // todo make item
+    pub items: Vec<Item>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -30,14 +30,14 @@ pub enum Item {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FnDecl {
     pub name: String,
-    pub params: Vec<FnParam>,
-    pub ret_ty: Ty,
+    pub params: Vec<NameTyPair>,
+    pub ret_ty: Option<Ty>,
     pub span: Span,
     pub body: Vec<Stmt>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct FnParam {
+pub struct NameTyPair {
     pub name: String,
     pub ty: Ty,
     pub span: Span,
@@ -46,14 +46,8 @@ pub struct FnParam {
 #[derive(Debug, Clone, PartialEq)]
 pub struct StructDecl {
     pub name: String,
+    pub fields: Vec<NameTyPair>,
     pub span: Span,
-    pub fields: Vec<StructField>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct StructField {
-    pub name: String,
-    pub ty: Ty,
 }
 
 #[derive(Debug, Clone, PartialEq)]

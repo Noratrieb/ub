@@ -1,5 +1,6 @@
 ---
 source: ub_parser/src/lexer.rs
+assertion_line: 110
 expression: tokens
 ---
 [
@@ -28,4 +29,6 @@ expression: tokens
     And,
     AndAnd,
     Caret,
+    Arrow,
+    Colon,
 ]

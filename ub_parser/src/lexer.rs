@@ -58,6 +58,10 @@ pub enum Token<'a> {
     AndAnd,
     #[token("^")]
     Caret,
+    #[token("->")]
+    Arrow,
+    #[token(":")]
+    Colon,
 
     // keywords
     #[token("struct")]
@@ -102,7 +106,7 @@ mod tests {
 
     #[test]
     fn punctuation() {
-        let tokens = lex_test("{} [] () .,; = == != >= <= < > + - * / | || & && ^");
+        let tokens = lex_test("{} [] () .,; = == != >= <= < > + - * / | || & && ^ -> :");
         insta::assert_debug_snapshot!(tokens);
     }
 
