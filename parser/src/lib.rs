@@ -17,10 +17,11 @@ pub fn parse(_str: &str, _file_name: PathBuf) -> Result<ast::File, ()> {
 
 pub fn test() {
     let lexer = Token::lexer(
-        "fn foo() {
-    1 + 5;
-        struct test {}
-    }",
+        "
+fn main() {
+    if 1 { 5 + 5; }
+}
+",
     );
     let len = lexer.source().len();
 

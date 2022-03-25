@@ -4,8 +4,8 @@ use chumsky::{prelude::*, Stream};
 
 use crate::{
     ast::{
-        Assignment, BinOp, BinOpKind, Call, Expr, File, FnDecl, Item, Literal, NameTyPair, Stmt,
-        StructDecl, Ty, TyKind, VarDecl,
+        Assignment, BinOp, BinOpKind, Call, ElsePart, Expr, File, FnDecl, IfStmt, Item, Literal,
+        NameTyPair, Stmt, StructDecl, Ty, TyKind, VarDecl,
     },
     lexer::Token,
 };
@@ -14,11 +14,10 @@ type Error<'src> = Simple<Token<'src>>;
 type Span = Range<usize>;
 
 fn ident_parser<'src>() -> impl Parser<Token<'src>, String, Error = Error<'src>> + Clone {
-    filter_map(|span, tok| match tok {
-        Token::Ident(ident) => Ok(ident.to_owned()),
-        _ => Err(Simple::expected_input_found(span, Vec::new(), Some(tok))),
-    })
-    .labelled("identifier")
+    let ident = select! {
+        Token::Ident(ident) => ident.to_owned(),
+    };
+    ident.labelled("identifier")
 }
 
 fn ty_parser<'src>() -> impl Parser<Token<'src>, Ty, Error = Error<'src>> + Clone {
@@ -131,79 +130,12 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
     })
 }
 
-fn statement_parser<'src>(
-    item: impl Parser<Token<'src>, Item, Error = Error<'src>> + Clone,
-) -> impl Parser<Token<'src>, Stmt, Error = Error<'src>> + Clone {
-    let var_decl = ty_parser()
-        .then(ident_parser())
-        .then_ignore(just(Token::Eq))
-        .then(expr_parser())
-        .map(|((ty, name), rhs)| {
-            Stmt::VarDecl(VarDecl {
-                name,
-                ty,
-                rhs: Some(rhs),
-                span: Default::default(),
-            })
-        });
-
-    let assignment = expr_parser()
-        .then_ignore(just(Token::Eq))
-        .then(expr_parser())
-        .map(|(place, rhs)| {
-            Stmt::Assignment(Assignment {
-                place,
-                rhs,
-                span: Default::default(),
-            })
-        });
-
-    var_decl
-        .or(assignment)
-        .or(expr_parser().map(|expr| Stmt::Expr(expr)))
-        .or(item.clone().map(|item| Stmt::Item(item)))
-        .then_ignore(just(Token::Semi))
-}
-
 fn name_ty_pair_parser<'src>() -> impl Parser<Token<'src>, NameTyPair, Error = Error<'src>> + Clone
 {
     ident_parser()
         .then_ignore(just(Token::Colon))
         .then(ty_parser())
         .map_with_span(|(name, ty), span| NameTyPair { name, ty, span })
-}
-
-fn function_parser<'src>(
-    item: impl Parser<Token<'src>, Item, Error = Error<'src>> + Clone,
-) -> impl Parser<Token<'src>, FnDecl, Error = Error<'src>> + Clone {
-    let name = ident_parser();
-
-    let params = name_ty_pair_parser()
-        .separated_by(just(Token::Comma))
-        .allow_trailing()
-        .delimited_by(just(Token::ParenO), just(Token::ParenC))
-        .labelled("function arguments");
-
-    let ret_ty = just(Token::Arrow).ignore_then(ty_parser()).or_not();
-
-    just(Token::Fn)
-        .map_with_span(|_, span| span)
-        .then(name)
-        .then(params)
-        .then(ret_ty)
-        .then(
-            statement_parser(item)
-                .repeated()
-                .delimited_by(just(Token::BraceO), just(Token::BraceC)),
-        )
-        .map(|((((fn_span, name), params), ret_ty), body)| FnDecl {
-            name,
-            params,
-            ret_ty,
-            span: fn_span,
-            body,
-        })
-        .labelled("function")
 }
 
 fn struct_parser<'src>() -> impl Parser<Token<'src>, StructDecl, Error = Error<'src>> + Clone {
@@ -224,7 +156,105 @@ fn struct_parser<'src>() -> impl Parser<Token<'src>, StructDecl, Error = Error<'
 
 fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + Clone {
     recursive(|item| {
-        function_parser(item)
+        // ---- statement
+
+        let var_decl = ty_parser()
+            .then(ident_parser())
+            .then_ignore(just(Token::Eq))
+            .then(expr_parser())
+            .map(|((ty, name), rhs)| {
+                Stmt::VarDecl(VarDecl {
+                    name,
+                    ty,
+                    rhs: Some(rhs),
+                    span: Default::default(),
+                })
+            });
+
+        let assignment = expr_parser()
+            .then_ignore(just(Token::Eq))
+            .then(expr_parser())
+            .map(|(place, rhs)| {
+                Stmt::Assignment(Assignment {
+                    place,
+                    rhs,
+                    span: Default::default(),
+                })
+            });
+
+        let mut stmt = Recursive::declare();
+        let if_stmt = recursive(|if_stmt| {
+            just(Token::If)
+                .ignore_then(expr_parser())
+                .then(
+                    stmt.clone()
+                        .repeated()
+                        .delimited_by(just(Token::BraceO), just(Token::BraceC)),
+                )
+                .then(
+                    just(Token::Else).ignore_then(
+                        if_stmt
+                            .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
+                            .or(stmt
+                                .clone()
+                                .repeated()
+                                .delimited_by(just(Token::BraceO), just(Token::BraceC))
+                                .map_with_span(ElsePart::Else))
+                            .or_not(),
+                    ),
+                )
+                .map_with_span(|((cond, body), else_part), span| IfStmt {
+                    cond,
+                    body,
+                    else_part,
+                    span,
+                })
+        })
+        .map(Stmt::IfStmt);
+
+        stmt.define(
+            choice((
+                var_decl,
+                assignment,
+                if_stmt,
+                expr_parser().map(Stmt::Expr),
+                item.map(Stmt::Item),
+            ))
+            .then_ignore(just(Token::Semi)),
+        );
+
+        // ---- function
+
+        let name = ident_parser();
+
+        let params = name_ty_pair_parser()
+            .separated_by(just(Token::Comma))
+            .allow_trailing()
+            .delimited_by(just(Token::ParenO), just(Token::ParenC))
+            .labelled("function arguments");
+
+        let ret_ty = just(Token::Arrow).ignore_then(ty_parser()).or_not();
+        let function = just(Token::Fn)
+            .map_with_span(|_, span| span)
+            .then(name)
+            .then(params)
+            .then(ret_ty)
+            .then(
+                stmt.repeated()
+                    .delimited_by(just(Token::BraceO), just(Token::BraceC)),
+            )
+            .map(|((((fn_span, name), params), ret_ty), body)| FnDecl {
+                name,
+                params,
+                ret_ty,
+                span: fn_span,
+                body,
+            })
+            .labelled("function");
+
+        // ---- item
+
+        function
             .map(Item::FnDecl)
             .or(struct_parser().map(Item::StructDecl))
     })

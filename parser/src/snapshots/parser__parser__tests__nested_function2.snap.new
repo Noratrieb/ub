@@ -1,0 +1,14 @@
+---
+source: parser/src/parser.rs
+assertion_line: 330
+expression: r
+---
+(
+    Some(
+        File {
+            name: "parser__parser__tests",
+            items: [],
+        },
+    ),
+    [],
+)
