@@ -1,23 +1,18 @@
 ---
-source: ub_parser/src/parser.rs
-assertion_line: 284
+source: parser/src/parser.rs
+assertion_line: 272
 expression: r
 ---
 (
     Some(
         File {
-            name: "ub_parser__parser__tests",
+            name: "parser__parser__tests",
             items: [
                 FnDecl(
                     FnDecl {
-                        name: "foo",
+                        name: "main",
                         params: [],
-                        ret_ty: Some(
-                            Ty {
-                                span: 12..15,
-                                kind: U64,
-                            },
-                        ),
+                        ret_ty: None,
                         span: 0..2,
                         body: [
                             Expr(
@@ -27,13 +22,13 @@ expression: r
                                         lhs: Literal(
                                             Integer(
                                                 1,
-                                                18..19,
+                                                12..13,
                                             ),
                                         ),
                                         rhs: Literal(
                                             Integer(
-                                                5,
-                                                22..23,
+                                                4,
+                                                16..17,
                                             ),
                                         ),
                                         span: 0..0,

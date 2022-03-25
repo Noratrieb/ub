@@ -187,6 +187,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87f3e037eac156d1775da914196f0f37741a274155e34a0b7e427c35d2a2ecb9"
 
 [[package]]
+name = "parser"
+version = "0.1.0"
+dependencies = [
+ "chumsky",
+ "insta",
+ "logos",
+]
+
+[[package]]
 name = "proc-macro-hack"
 version = "0.5.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -305,16 +314,7 @@ dependencies = [
 name = "ub"
 version = "0.1.0"
 dependencies = [
- "ub_parser",
-]
-
-[[package]]
-name = "ub_parser"
-version = "0.1.0"
-dependencies = [
- "chumsky",
- "insta",
- "logos",
+ "parser",
 ]
 
 [[package]]

@@ -1,12 +1,12 @@
 ---
-source: ub_parser/src/parser.rs
-assertion_line: 290
+source: parser/src/parser.rs
+assertion_line: 302
 expression: r
 ---
 (
     Some(
         File {
-            name: "ub_parser__parser__tests",
+            name: "parser__parser__tests",
             items: [
                 StructDecl(
                     StructDecl {
