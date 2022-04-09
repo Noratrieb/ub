@@ -5,7 +5,7 @@ use chumsky::{prelude::*, Stream};
 use crate::{
     ast::{
         Assignment, BinOp, BinOpKind, Call, ElsePart, Expr, File, FnDecl, IfStmt, Item, Literal,
-        NameTyPair, Stmt, StructDecl, Ty, TyKind, VarDecl,
+        NameTyPair, Stmt, StructDecl, Ty, TyKind, VarDecl, WhileStmt,
     },
     lexer::Token,
 };
@@ -148,6 +148,7 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
         let assignment = expr_parser()
             .then_ignore(just(Token::Eq))
             .then(expr_parser())
+            .then_ignore(just(Token::Semi))
             .map(|(place, rhs)| {
                 Stmt::Assignment(Assignment {
                     place,
@@ -156,39 +157,50 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
                 })
             });
 
-        // let if_stmt = recursive(|if_stmt| {
-        //     just(Token::If)
-        //         .ignore_then(expr_parser())
-        //         .then(
-        //             stmt.clone()
-        //                 .repeated()
-        //                 .delimited_by(just(Token::BraceO), just(Token::BraceC)),
-        //         )
-        //         .then(
-        //             just(Token::Else).ignore_then(
-        //                 if_stmt
-        //                     .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
-        //                     .or(stmt
-        //                         .clone()
-        //                         .repeated()
-        //                         .delimited_by(just(Token::BraceO), just(Token::BraceC))
-        //                         .map_with_span(ElsePart::Else))
-        //                     .or_not(),
-        //             ),
-        //         )
-        //         .map_with_span(|((cond, body), else_part), span| IfStmt {
-        //             cond,
-        //             body,
-        //             else_part,
-        //             span,
-        //         })
-        // })
-        // .map(Stmt::IfStmt);
+        let while_loop = just(Token::While)
+            .ignore_then(expr_parser())
+            .then(
+                stmt.clone()
+                    .repeated()
+                    .delimited_by(just(Token::BraceO), just(Token::BraceC)),
+            )
+            .map_with_span(|(cond, body), span| Stmt::WhileStmt(WhileStmt { cond, body, span }))
+            .labelled("while loop");
+
+        let if_stmt = recursive(|if_stmt| {
+            just(Token::If)
+                .ignore_then(expr_parser())
+                .then(
+                    stmt.clone()
+                        .repeated()
+                        .delimited_by(just(Token::BraceO), just(Token::BraceC)),
+                )
+                .then(
+                    just(Token::Else).ignore_then(
+                        if_stmt
+                            .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
+                            .or(stmt
+                                .clone()
+                                .repeated()
+                                .delimited_by(just(Token::BraceO), just(Token::BraceC))
+                                .map_with_span(ElsePart::Else))
+                            .or_not(),
+                    ),
+                )
+                .map_with_span(|((cond, body), else_part), span| IfStmt {
+                    cond,
+                    body,
+                    else_part,
+                    span,
+                })
+        })
+        .map(Stmt::IfStmt);
 
         var_decl
             .or(assignment)
-            .or(expr_parser().map(Stmt::Expr))
-            .then_ignore(just(Token::Semi))
+            .or(expr_parser().then_ignore(just(Token::Semi)).map(Stmt::Expr))
+            .or(if_stmt)
+            .or(while_loop)
     })
     .labelled("statement")
 }
