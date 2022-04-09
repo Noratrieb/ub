@@ -1,0 +1,45 @@
+---
+source: parser/src/parser.rs
+assertion_line: 330
+expression: r
+---
+(
+    Some(
+        File {
+            name: "parser__parser__tests",
+            items: [
+                FnDecl(
+                    FnDecl {
+                        name: "foo",
+                        params: [],
+                        ret_ty: Some(
+                            Ty {
+                                span: 12..15,
+                                kind: U64,
+                            },
+                        ),
+                        span: 0..2,
+                        body: [
+                            IfStmt(
+                                IfStmt {
+                                    cond: Name(
+                                        "false",
+                                    ),
+                                    body: [],
+                                    else_part: Some(
+                                        Else(
+                                            [],
+                                            35..37,
+                                        ),
+                                    ),
+                                    span: 18..37,
+                                },
+                            ),
+                        ],
+                    },
+                ),
+            ],
+        },
+    ),
+    [],
+)

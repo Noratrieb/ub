@@ -136,6 +136,7 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
             .then(ident_parser())
             .then_ignore(just(Token::Eq))
             .then(expr_parser())
+            .then_ignore(just(Token::Semi))
             .map(|((ty, name), rhs)| {
                 Stmt::VarDecl(VarDecl {
                     name,
@@ -176,16 +177,17 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
                         .delimited_by(just(Token::BraceO), just(Token::BraceC)),
                 )
                 .then(
-                    just(Token::Else).ignore_then(
-                        if_stmt
-                            .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
-                            .or(stmt
-                                .clone()
-                                .repeated()
-                                .delimited_by(just(Token::BraceO), just(Token::BraceC))
-                                .map_with_span(ElsePart::Else))
-                            .or_not(),
-                    ),
+                    just(Token::Else)
+                        .ignore_then(
+                            if_stmt
+                                .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
+                                .or(stmt
+                                    .clone()
+                                    .repeated()
+                                    .delimited_by(just(Token::BraceO), just(Token::BraceC))
+                                    .map_with_span(ElsePart::Else)),
+                        )
+                        .or_not(),
                 )
                 .map_with_span(|((cond, body), else_part), span| IfStmt {
                     cond,
@@ -322,6 +324,24 @@ mod tests {
     #[test]
     fn function() {
         let r = parse("fn foo() -> u64 { 1 + 5; }");
+        insta::assert_debug_snapshot!(r);
+    }
+
+    #[test]
+    fn if_no_else() {
+        let r = parse("fn foo() -> u64 { if false {} }");
+        insta::assert_debug_snapshot!(r);
+    }
+
+    #[test]
+    fn if_else() {
+        let r = parse("fn foo() -> u64 { if false {} else {} }");
+        insta::assert_debug_snapshot!(r);
+    }
+
+    #[test]
+    fn while_loop() {
+        let r = parse("fn foo() -> u64 { while false {} }");
         insta::assert_debug_snapshot!(r);
     }
 
