@@ -1,6 +1,6 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 333
+assertion_line: 350
 expression: r
 ---
 (
@@ -18,7 +18,7 @@ expression: r
                                 kind: U64,
                             },
                         ),
-                        span: 0..2,
+                        span: 0..31,
                         body: [
                             IfStmt(
                                 IfStmt {

@@ -17,7 +17,7 @@ pub struct Ty {
 #[derive(Debug, Clone, PartialEq)]
 pub enum TyKind {
     U64,
-    Ptr(Box<TyKind>),
+    Ptr(Box<Ty>),
     Name(String),
 }
 

@@ -17,19 +17,37 @@ fn ident_parser<'src>() -> impl Parser<Token<'src>, String, Error = Error<'src>>
     let ident = select! {
         Token::Ident(ident) => ident.to_owned(),
     };
-    ident.labelled("identifier")
+    ident.labelled("identifier").boxed()
 }
 
 fn ty_parser<'src>() -> impl Parser<Token<'src>, Ty, Error = Error<'src>> + Clone {
-    filter_map(|span, token| {
-        let kind = match token {
-            Token::Ident("u64") => TyKind::U64,
-            _ => return Err(Simple::expected_input_found(span, Vec::new(), Some(token))),
-        };
+    recursive(|ty_parser| {
+        let primitive = filter_map(|span, token| {
+            let kind = match token {
+                Token::Ident("u64") => TyKind::U64,
+                _ => return Err(Simple::expected_input_found(span, Vec::new(), Some(token))),
+            };
+            Ok(Ty { span, kind })
+        })
+        .labelled("primitive type");
 
-        Ok(Ty { span, kind })
+        let ptr = just(Token::Asterisk)
+            .ignore_then(ty_parser.clone())
+            .map_with_span(|ty: Ty, span| Ty {
+                kind: TyKind::Ptr(Box::new(ty)),
+                span,
+            })
+            .labelled("pointer type");
+
+        let name = ident_parser()
+            .map_with_span(|name: String, span| Ty {
+                kind: TyKind::Name(name),
+                span,
+            })
+            .labelled("name type");
+
+        primitive.or(ptr).or(name).labelled("type").boxed()
     })
-    .labelled("type")
 }
 
 fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + Clone {
@@ -51,7 +69,7 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
             .chain(just(Token::Comma).ignore_then(expr.clone()).repeated())
             .then_ignore(just(Token::Comma).or_not())
             .or_not()
-            .map(|item| item.unwrap_or_else(Vec::new));
+            .map(|item| item.unwrap_or_default());
 
         let array = items
             .clone()
@@ -72,7 +90,7 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
                     .delimited_by(just(Token::ParenO), just(Token::ParenC))
                     .repeated(),
             )
-            .foldl(|callee, args| {
+            .foldl(|callee: Expr, args: Vec<Expr>| {
                 Expr::Call(Call {
                     callee: Box::new(callee),
                     args,
@@ -126,7 +144,7 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
                     span: 0..0, // lol todo
                 })
             });
-        compare.labelled("comparison")
+        compare.labelled("comparison").boxed()
     })
 }
 
@@ -244,8 +262,7 @@ fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + 
 
     let ret_ty = just(Token::Arrow).ignore_then(ty_parser()).or_not();
     let function = just(Token::Fn)
-        .map_with_span(|_, span| span)
-        .then(name)
+        .ignore_then(name)
         .then(params)
         .then(ret_ty)
         .then(
@@ -253,11 +270,11 @@ fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + 
                 .repeated()
                 .delimited_by(just(Token::BraceO), just(Token::BraceC)),
         )
-        .map(|((((fn_span, name), params), ret_ty), body)| FnDecl {
+        .map_with_span(|(((name, params), ret_ty), body), span| FnDecl {
             name,
             params,
             ret_ty,
-            span: fn_span,
+            span,
             body,
         })
         .labelled("function");
@@ -274,10 +291,10 @@ fn file_parser<'src>(
     file_name: PathBuf,
 ) -> impl Parser<Token<'src>, File, Error = Error<'src>> + Clone {
     item_parser()
-        // .repeated()
+        .repeated()
         .map(move |items| File {
             name: file_name.clone(),
-            items: vec![items],
+            items,
         })
         .labelled("file")
 }
@@ -354,6 +371,12 @@ mod tests {
     #[test]
     fn struct_() {
         let r = parse("struct X { y: u64, x: u64 }");
+        insta::assert_debug_snapshot!(r);
+    }
+
+    #[test]
+    fn types() {
+        let r = parse("fn types() -> *u64 { Test test = 2; *Hello = true; }");
         insta::assert_debug_snapshot!(r);
     }
 }

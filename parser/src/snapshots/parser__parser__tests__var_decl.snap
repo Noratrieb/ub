@@ -1,6 +1,6 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 319
+assertion_line: 368
 expression: r
 ---
 (
@@ -18,7 +18,7 @@ expression: r
                                 kind: U64,
                             },
                         ),
-                        span: 0..2,
+                        span: 0..34,
                         body: [
                             VarDecl(
                                 VarDecl {

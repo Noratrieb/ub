@@ -1,6 +1,6 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 278
+assertion_line: 338
 expression: r
 ---
 (
@@ -13,7 +13,7 @@ expression: r
                         name: "main",
                         params: [],
                         ret_ty: None,
-                        span: 0..2,
+                        span: 0..32,
                         body: [
                             Expr(
                                 BinOp(
