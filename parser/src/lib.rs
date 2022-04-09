@@ -19,7 +19,7 @@ pub fn parse(_str: &str, _file_name: PathBuf) -> Result<ast::File, ()> {
 pub fn test() {
     let src = "
 fn main() {
-    u64 hello = 5;
+    u64 hello = 4
 }
 ";
 

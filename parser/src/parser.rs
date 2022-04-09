@@ -223,6 +223,7 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
             .or(while_loop)
     })
     .labelled("statement")
+    .boxed()
 }
 
 fn name_ty_pair_parser<'src>() -> impl Parser<Token<'src>, NameTyPair, Error = Error<'src>> + Clone
@@ -304,7 +305,7 @@ where
     I: 'src,
     I: Iterator<Item = (Token<'src>, Span)>,
 {
-    file_parser(file_name).parse_recovery_verbose(Stream::from_iter(len..len + 1, lexer))
+    file_parser(file_name).parse_recovery(Stream::from_iter(len..len + 1, lexer))
 }
 
 #[cfg(test)]
