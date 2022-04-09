@@ -293,6 +293,7 @@ fn file_parser<'src>(
 ) -> impl Parser<Token<'src>, File, Error = Error<'src>> + Clone {
     item_parser()
         .repeated()
+        .then_ignore(end())
         .map(move |items| File {
             name: file_name.clone(),
             items,
