@@ -130,34 +130,8 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
     })
 }
 
-fn name_ty_pair_parser<'src>() -> impl Parser<Token<'src>, NameTyPair, Error = Error<'src>> + Clone
-{
-    ident_parser()
-        .then_ignore(just(Token::Colon))
-        .then(ty_parser())
-        .map_with_span(|(name, ty), span| NameTyPair { name, ty, span })
-}
-
-fn struct_parser<'src>() -> impl Parser<Token<'src>, StructDecl, Error = Error<'src>> + Clone {
-    let name = just(Token::Struct).ignore_then(ident_parser());
-
-    let fields = name_ty_pair_parser()
-        .separated_by(just(Token::Comma))
-        .delimited_by(just(Token::BraceO), just(Token::BraceC));
-
-    name.then(fields)
-        .map(|(name, fields)| StructDecl {
-            name,
-            fields,
-            span: Default::default(),
-        })
-        .labelled("struct")
-}
-
-fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + Clone {
-    recursive(|item| {
-        // ---- statement
-
+fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src>> + Clone {
+    recursive(|stmt| {
         let var_decl = ty_parser()
             .then(ident_parser())
             .then_ignore(just(Token::Eq))
@@ -182,7 +156,6 @@ fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + 
                 })
             });
 
-        let mut stmt = Recursive::declare();
         let if_stmt = recursive(|if_stmt| {
             just(Token::If)
                 .ignore_then(expr_parser())
@@ -211,54 +184,73 @@ fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + 
                 })
         })
         .map(Stmt::IfStmt);
-
-        stmt.define(
-            choice((
-                var_decl,
-                assignment,
-                if_stmt,
-                expr_parser().map(Stmt::Expr),
-                item.map(Stmt::Item),
-            ))
-            .then_ignore(just(Token::Semi)),
-        );
-
-        // ---- function
-
-        let name = ident_parser();
-
-        let params = name_ty_pair_parser()
-            .separated_by(just(Token::Comma))
-            .allow_trailing()
-            .delimited_by(just(Token::ParenO), just(Token::ParenC))
-            .labelled("function arguments");
-
-        let ret_ty = just(Token::Arrow).ignore_then(ty_parser()).or_not();
-        let function = just(Token::Fn)
-            .map_with_span(|_, span| span)
-            .then(name)
-            .then(params)
-            .then(ret_ty)
-            .then(
-                stmt.repeated()
-                    .delimited_by(just(Token::BraceO), just(Token::BraceC)),
-            )
-            .map(|((((fn_span, name), params), ret_ty), body)| FnDecl {
-                name,
-                params,
-                ret_ty,
-                span: fn_span,
-                body,
-            })
-            .labelled("function");
-
-        // ---- item
-
-        function
-            .map(Item::FnDecl)
-            .or(struct_parser().map(Item::StructDecl))
+        choice((var_decl, assignment, if_stmt, expr_parser().map(Stmt::Expr)))
+            .then_ignore(just(Token::Semi))
     })
-    .labelled("item")
+    .labelled("statement")
+}
+
+fn name_ty_pair_parser<'src>() -> impl Parser<Token<'src>, NameTyPair, Error = Error<'src>> + Clone
+{
+    ident_parser()
+        .then_ignore(just(Token::Colon))
+        .then(ty_parser())
+        .map_with_span(|(name, ty), span| NameTyPair { name, ty, span })
+}
+
+fn struct_parser<'src>() -> impl Parser<Token<'src>, StructDecl, Error = Error<'src>> + Clone {
+    let name = just(Token::Struct).ignore_then(ident_parser());
+
+    let fields = name_ty_pair_parser()
+        .separated_by(just(Token::Comma))
+        .delimited_by(just(Token::BraceO), just(Token::BraceC));
+
+    name.then(fields)
+        .map(|(name, fields)| StructDecl {
+            name,
+            fields,
+            span: Default::default(),
+        })
+        .labelled("struct")
+}
+
+fn item_parser<'src>() -> impl Parser<Token<'src>, Item, Error = Error<'src>> + Clone {
+    // ---- function
+
+    let name = ident_parser();
+
+    let params = name_ty_pair_parser()
+        .separated_by(just(Token::Comma))
+        .allow_trailing()
+        .delimited_by(just(Token::ParenO), just(Token::ParenC))
+        .labelled("function arguments");
+
+    let ret_ty = just(Token::Arrow).ignore_then(ty_parser()).or_not();
+    let function = just(Token::Fn)
+        .map_with_span(|_, span| span)
+        .then(name)
+        .then(params)
+        .then(ret_ty)
+        .then(
+            statement_parser()
+                .repeated()
+                .delimited_by(just(Token::BraceO), just(Token::BraceC)),
+        )
+        .map(|((((fn_span, name), params), ret_ty), body)| FnDecl {
+            name,
+            params,
+            ret_ty,
+            span: fn_span,
+            body,
+        })
+        .labelled("function");
+
+    // ---- item
+
+    function
+        .map(Item::FnDecl)
+        .or(struct_parser().map(Item::StructDecl))
+        .labelled("item")
 }
 
 fn file_parser<'src>(
