@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display, Formatter};
+
 use logos::Logos;
 
 #[derive(Logos, Debug, Clone, Hash, PartialEq, Eq)]
@@ -89,6 +91,52 @@ pub enum Token<'a> {
     #[error]
     #[regex(r"[ \t\r\n]+", logos::skip)]
     Error,
+}
+
+impl<'a> Display for Token<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Token::Comment => f.write_str("comment"),
+            Token::BraceO => f.write_str("{"),
+            Token::BraceC => f.write_str("}"),
+            Token::BracketO => f.write_str("["),
+            Token::BracketC => f.write_str("]"),
+            Token::ParenO => f.write_str("("),
+            Token::ParenC => f.write_str(")"),
+            Token::Dot => f.write_str("."),
+            Token::Comma => f.write_str(","),
+            Token::Semi => f.write_str(";"),
+            Token::Eq => f.write_str("="),
+            Token::EqEq => f.write_str("=="),
+            Token::Bang => f.write_str("!"),
+            Token::BangEq => f.write_str("!="),
+            Token::Greater => f.write_str(">"),
+            Token::Less => f.write_str("<"),
+            Token::GreaterEq => f.write_str(">="),
+            Token::LessEq => f.write_str("<="),
+            Token::Asterisk => f.write_str("*"),
+            Token::Slash => f.write_str("/"),
+            Token::Plus => f.write_str("+"),
+            Token::Minus => f.write_str("-"),
+            Token::Or => f.write_str("|"),
+            Token::And => f.write_str("&"),
+            Token::OrOr => f.write_str("||"),
+            Token::AndAnd => f.write_str("&&"),
+            Token::Caret => f.write_str("^"),
+            Token::Arrow => f.write_str("->"),
+            Token::Colon => f.write_str(":"),
+            Token::Struct => f.write_str("struct"),
+            Token::Fn => f.write_str("fn"),
+            Token::If => f.write_str("if"),
+            Token::Else => f.write_str("else"),
+            Token::While => f.write_str("while"),
+            Token::Loop => f.write_str("loop"),
+            Token::Ident(ident) => write!(f, "identifier `{ident}`"),
+            Token::String(str) => write!(f, "\"{str}\""),
+            Token::Integer(int) => write!(f, "{int}"),
+            Token::Error => f.write_str("error"),
+        }
+    }
 }
 
 pub fn lex<'src>(code: &'src str) -> logos::Lexer<'_, Token<'src>> {

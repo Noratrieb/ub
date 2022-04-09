@@ -156,35 +156,38 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
                 })
             });
 
-        let if_stmt = recursive(|if_stmt| {
-            just(Token::If)
-                .ignore_then(expr_parser())
-                .then(
-                    stmt.clone()
-                        .repeated()
-                        .delimited_by(just(Token::BraceO), just(Token::BraceC)),
-                )
-                .then(
-                    just(Token::Else).ignore_then(
-                        if_stmt
-                            .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
-                            .or(stmt
-                                .clone()
-                                .repeated()
-                                .delimited_by(just(Token::BraceO), just(Token::BraceC))
-                                .map_with_span(ElsePart::Else))
-                            .or_not(),
-                    ),
-                )
-                .map_with_span(|((cond, body), else_part), span| IfStmt {
-                    cond,
-                    body,
-                    else_part,
-                    span,
-                })
-        })
-        .map(Stmt::IfStmt);
-        choice((var_decl, assignment, if_stmt, expr_parser().map(Stmt::Expr)))
+        // let if_stmt = recursive(|if_stmt| {
+        //     just(Token::If)
+        //         .ignore_then(expr_parser())
+        //         .then(
+        //             stmt.clone()
+        //                 .repeated()
+        //                 .delimited_by(just(Token::BraceO), just(Token::BraceC)),
+        //         )
+        //         .then(
+        //             just(Token::Else).ignore_then(
+        //                 if_stmt
+        //                     .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
+        //                     .or(stmt
+        //                         .clone()
+        //                         .repeated()
+        //                         .delimited_by(just(Token::BraceO), just(Token::BraceC))
+        //                         .map_with_span(ElsePart::Else))
+        //                     .or_not(),
+        //             ),
+        //         )
+        //         .map_with_span(|((cond, body), else_part), span| IfStmt {
+        //             cond,
+        //             body,
+        //             else_part,
+        //             span,
+        //         })
+        // })
+        // .map(Stmt::IfStmt);
+
+        var_decl
+            .or(assignment)
+            .or(expr_parser().map(Stmt::Expr))
             .then_ignore(just(Token::Semi))
     })
     .labelled("statement")
@@ -257,10 +260,10 @@ fn file_parser<'src>(
     file_name: PathBuf,
 ) -> impl Parser<Token<'src>, File, Error = Error<'src>> + Clone {
     item_parser()
-        .repeated()
+        // .repeated()
         .map(move |items| File {
             name: file_name.clone(),
-            items,
+            items: vec![items],
         })
         .labelled("file")
 }
@@ -301,30 +304,24 @@ mod tests {
     #[test]
     fn expression() {
         let r = parse("fn main() { (4 / hallo()) + 5; }");
-        insta::assert_debug_snapshot!(r)
+        insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn function() {
         let r = parse("fn foo() -> u64 { 1 + 5; }");
-        insta::assert_debug_snapshot!(r)
+        insta::assert_debug_snapshot!(r);
     }
 
-    //#[test]
-    //fn nested_function() {
-    //    let r = parse("fn foo() { fn foo2() {} fn foo3() {} }");
-    //    insta::assert_debug_snapshot!(r)
-    //}
-
     #[test]
-    fn nested_function2() {
-        let r = parse("fn foo() { fn foo2() {} 1 + 5; }");
-        insta::assert_debug_snapshot!(r)
+    fn var_decl() {
+        let r = parse("fn foo() -> u64 { u64 hello = 5; }");
+        insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn struct_() {
         let r = parse("struct X { y: u64, x: u64 }");
-        insta::assert_debug_snapshot!(r)
+        insta::assert_debug_snapshot!(r);
     }
 }

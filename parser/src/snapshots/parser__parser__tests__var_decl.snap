@@ -1,0 +1,48 @@
+---
+source: parser/src/parser.rs
+assertion_line: 319
+expression: r
+---
+(
+    Some(
+        File {
+            name: "parser__parser__tests",
+            items: [
+                FnDecl(
+                    FnDecl {
+                        name: "foo",
+                        params: [],
+                        ret_ty: Some(
+                            Ty {
+                                span: 12..15,
+                                kind: U64,
+                            },
+                        ),
+                        span: 0..2,
+                        body: [
+                            VarDecl(
+                                VarDecl {
+                                    name: "hello",
+                                    ty: Ty {
+                                        span: 18..21,
+                                        kind: U64,
+                                    },
+                                    rhs: Some(
+                                        Literal(
+                                            Integer(
+                                                5,
+                                                30..31,
+                                            ),
+                                        ),
+                                    ),
+                                    span: 0..0,
+                                },
+                            ),
+                        ],
+                    },
+                ),
+            ],
+        },
+    ),
+    [],
+)
