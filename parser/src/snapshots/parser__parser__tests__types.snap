@@ -1,0 +1,78 @@
+---
+source: parser/src/parser.rs
+assertion_line: 382
+expression: r
+---
+(
+    Some(
+        File {
+            name: "parser__parser__tests",
+            items: [
+                FnDecl(
+                    FnDecl {
+                        name: "types",
+                        params: [],
+                        ret_ty: Some(
+                            Ty {
+                                span: 14..18,
+                                kind: Ptr(
+                                    Ty {
+                                        span: 15..18,
+                                        kind: U64,
+                                    },
+                                ),
+                            },
+                        ),
+                        span: 0..52,
+                        body: [
+                            VarDecl(
+                                VarDecl {
+                                    name: "test",
+                                    ty: Ty {
+                                        span: 21..25,
+                                        kind: Name(
+                                            "Test",
+                                        ),
+                                    },
+                                    rhs: Some(
+                                        Literal(
+                                            Integer(
+                                                2,
+                                                33..34,
+                                            ),
+                                        ),
+                                    ),
+                                    span: 0..0,
+                                },
+                            ),
+                            VarDecl(
+                                VarDecl {
+                                    name: "int",
+                                    ty: Ty {
+                                        span: 36..40,
+                                        kind: Ptr(
+                                            Ty {
+                                                span: 37..40,
+                                                kind: U64,
+                                            },
+                                        ),
+                                    },
+                                    rhs: Some(
+                                        Literal(
+                                            Integer(
+                                                25,
+                                                47..49,
+                                            ),
+                                        ),
+                                    ),
+                                    span: 0..0,
+                                },
+                            ),
+                        ],
+                    },
+                ),
+            ],
+        },
+    ),
+    [],
+)

@@ -53,7 +53,7 @@ pub enum Token<'a> {
     #[token("|")]
     Or,
     #[token("&")]
-    And,
+    Ampersand,
     #[token("||")]
     OrOr,
     #[token("&&")]
@@ -119,7 +119,7 @@ impl<'a> Display for Token<'a> {
             Token::Plus => f.write_str("+"),
             Token::Minus => f.write_str("-"),
             Token::Or => f.write_str("|"),
-            Token::And => f.write_str("&"),
+            Token::Ampersand => f.write_str("&"),
             Token::OrOr => f.write_str("||"),
             Token::AndAnd => f.write_str("&&"),
             Token::Caret => f.write_str("^"),

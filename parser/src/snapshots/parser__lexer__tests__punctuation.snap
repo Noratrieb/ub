@@ -1,6 +1,6 @@
 ---
 source: parser/src/lexer.rs
-assertion_line: 110
+assertion_line: 158
 expression: tokens
 ---
 [
@@ -26,7 +26,7 @@ expression: tokens
     Slash,
     Or,
     OrOr,
-    And,
+    Ampersand,
     AndAnd,
     Caret,
     Arrow,

@@ -106,6 +106,7 @@ pub struct LoopStmt {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     BinOp(BinOp),
+    UnaryOp(UnaryOp),
     FieldAccess(FieldAccess),
     Call(Call),
     Deref(Box<Expr>),
@@ -142,6 +143,21 @@ pub enum BinOpKind {
     BitAnd,
     BitOr,
     Xor,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct UnaryOp {
+    pub expr: Box<Expr>,
+    pub kind: UnaryOpKind,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum UnaryOpKind {
+    Not,
+    Neg,
+    Deref,
+    AddrOf,
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -5,7 +5,7 @@ use chumsky::{prelude::*, Stream};
 use crate::{
     ast::{
         Assignment, BinOp, BinOpKind, Call, ElsePart, Expr, File, FnDecl, IfStmt, Item, Literal,
-        NameTyPair, Stmt, StructDecl, Ty, TyKind, VarDecl, WhileStmt,
+        NameTyPair, Stmt, StructDecl, Ty, TyKind, UnaryOp, UnaryOpKind, VarDecl, WhileStmt,
     },
     lexer::Token,
 };
@@ -77,7 +77,7 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
             .map(Expr::Array);
 
         let atom = literal
-            .or(ident_parser().map(|str| Expr::Name(str.to_owned())))
+            .or(ident_parser().map(Expr::Name))
             .or(array)
             .or(expr
                 .clone()
@@ -96,6 +96,14 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
                     args,
                 })
             });
+
+        // let _unary_op = just(Token::Minus)
+        //     .to(UnaryOpKind::Neg)
+        //     .or(just(Token::Bang).to(UnaryOpKind::Not))
+        //     .or(just(Token::Asterisk).to(UnaryOpKind::Deref))
+        //     .or(just(Token::Ampersand).to(UnaryOpKind::AddrOf));
+
+        // todo: unary
 
         let op = just(Token::Asterisk)
             .to(BinOpKind::Mul)
@@ -176,34 +184,27 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
                 })
             });
 
+        let block = stmt
+            .clone()
+            .repeated()
+            .delimited_by(just(Token::BraceO), just(Token::BraceC));
+
         let while_loop = just(Token::While)
             .ignore_then(expr_parser())
-            .then(
-                stmt.clone()
-                    .repeated()
-                    .delimited_by(just(Token::BraceO), just(Token::BraceC)),
-            )
+            .then(block.clone())
             .map_with_span(|(cond, body), span| Stmt::WhileStmt(WhileStmt { cond, body, span }))
             .labelled("while loop");
 
         let if_stmt = recursive(|if_stmt| {
             just(Token::If)
                 .ignore_then(expr_parser())
-                .then(
-                    stmt.clone()
-                        .repeated()
-                        .delimited_by(just(Token::BraceO), just(Token::BraceC)),
-                )
+                .then(block.clone())
                 .then(
                     just(Token::Else)
                         .ignore_then(
                             if_stmt
                                 .map(|if_stmt| ElsePart::ElseIf(Box::new(if_stmt)))
-                                .or(stmt
-                                    .clone()
-                                    .repeated()
-                                    .delimited_by(just(Token::BraceO), just(Token::BraceC))
-                                    .map_with_span(ElsePart::Else)),
+                                .or(block.clone().map_with_span(ElsePart::Else)),
                         )
                         .or_not(),
                 )
@@ -341,6 +342,19 @@ mod tests {
     }
 
     #[test]
+    fn unary() {
+        let r = parse(
+            "fn main() {
+    -(*5);
+    &5;
+    2 + &8;
+    *6 * *8; // :)
+}",
+        );
+        insta::assert_debug_snapshot!(r);
+    }
+
+    #[test]
     fn function() {
         let r = parse("fn foo() -> u64 { 1 + 5; }");
         insta::assert_debug_snapshot!(r);
@@ -378,7 +392,7 @@ mod tests {
 
     #[test]
     fn types() {
-        let r = parse("fn types() -> *u64 { Test test = 2; *Hello = true; }");
+        let r = parse("fn types() -> *u64 { Test test = 2; *u64 int = 25; }");
         insta::assert_debug_snapshot!(r);
     }
 }
