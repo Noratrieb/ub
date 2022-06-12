@@ -104,7 +104,13 @@ pub struct LoopStmt {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Expr {
+pub struct Expr {
+    pub kind: ExprKind,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ExprKind {
     BinOp(BinOp),
     UnaryOp(UnaryOp),
     FieldAccess(FieldAccess),
@@ -123,7 +129,7 @@ pub struct BinOp {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BinOpKind {
     Eq,
     Neq,
@@ -152,7 +158,7 @@ pub struct UnaryOp {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UnaryOpKind {
     Not,
     Neg,
@@ -172,7 +178,7 @@ pub struct Call {
     pub args: Vec<Expr>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Literal {
     String(String, Span),
     Integer(u64, Span),

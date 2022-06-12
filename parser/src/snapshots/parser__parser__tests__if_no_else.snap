@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 350
 expression: r
 ---
 (
@@ -22,9 +21,12 @@ expression: r
                         body: [
                             IfStmt(
                                 IfStmt {
-                                    cond: Name(
-                                        "false",
-                                    ),
+                                    cond: Expr {
+                                        kind: Name(
+                                            "false",
+                                        ),
+                                        span: 21..26,
+                                    },
                                     body: [],
                                     else_part: None,
                                     span: 18..29,

@@ -4,8 +4,9 @@ use chumsky::{prelude::*, Stream};
 
 use crate::{
     ast::{
-        Assignment, BinOp, BinOpKind, Call, ElsePart, Expr, File, FnDecl, IfStmt, Item, Literal,
-        NameTyPair, Stmt, StructDecl, Ty, TyKind, UnaryOp, UnaryOpKind, VarDecl, WhileStmt,
+        Assignment, BinOp, BinOpKind, Call, ElsePart, Expr, ExprKind, File, FnDecl, IfStmt, Item,
+        Literal, NameTyPair, Stmt, StructDecl, Ty, TyKind, UnaryOp, UnaryOpKind, VarDecl,
+        WhileStmt,
     },
     lexer::Token,
 };
@@ -52,13 +53,19 @@ fn ty_parser<'src>() -> impl Parser<Token<'src>, Ty, Error = Error<'src>> + Clon
 
 fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + Clone {
     recursive(|expr| {
-        let literal = filter_map(|span, token| match token {
-            Token::String(str) => Ok(Expr::Literal(Literal::String(
-                str[1..str.len() - 2].to_owned(),
+        let literal = filter_map(|span: Span, token| match token {
+            Token::String(str) => Ok(Expr {
+                kind: ExprKind::Literal(Literal::String(
+                    str[1..str.len() - 2].to_owned(),
+                    span.clone(),
+                )),
                 span,
-            ))),
+            }),
             // todo lol unwrap
-            Token::Integer(int) => Ok(Expr::Literal(Literal::Integer(int.parse().unwrap(), span))),
+            Token::Integer(int) => Ok(Expr {
+                kind: ExprKind::Literal(Literal::Integer(int.parse().unwrap(), span.clone())),
+                span,
+            }),
             _ => Err(Simple::expected_input_found(span, Vec::new(), Some(token))),
         })
         .labelled("literal");
@@ -74,15 +81,20 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
         let array = expr_list
             .clone()
             .delimited_by(just(Token::BracketO), just(Token::BracketC))
-            .map(Expr::Array);
+            .map_with_span(|exprs: Vec<Expr>, span| Expr {
+                kind: ExprKind::Array(exprs),
+                span,
+            });
 
         let atom = literal
-            .or(ident_parser().map(Expr::Name))
+            .or(ident_parser().map_with_span(|name, span| Expr {
+                kind: ExprKind::Name(name),
+                span,
+            }))
             .or(array)
             .or(expr
                 .clone()
                 .delimited_by(just(Token::ParenO), just(Token::ParenC)))
-            .debug("atom")
             .boxed();
 
         let call = atom
@@ -93,10 +105,15 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
                     .repeated(),
             )
             .foldl(|callee: Expr, args: Vec<Expr>| {
-                Expr::Call(Call {
-                    callee: Box::new(callee),
-                    args,
-                })
+                let span =
+                    callee.span.start..args.last().map(|e| e.span.end).unwrap_or(callee.span.end);
+                Expr {
+                    kind: ExprKind::Call(Call {
+                        callee: Box::new(callee),
+                        args,
+                    }),
+                    span,
+                }
             })
             .labelled("call")
             .boxed();
@@ -110,14 +127,17 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
         .repeated()
         .then(call)
         .foldr(|kind, rhs| {
-            Expr::UnaryOp(UnaryOp {
-                expr: Box::new(rhs),
-                kind,
-                span: 0..0, // lol todo
-            })
+            let span = rhs.span.clone();
+            Expr {
+                kind: ExprKind::UnaryOp(UnaryOp {
+                    expr: Box::new(rhs),
+                    kind,
+                    span: span.clone(),
+                }),
+                span,
+            }
         })
         .labelled("unary")
-        .debug("unary")
         .boxed();
 
         let op = just(Token::Asterisk)
@@ -128,12 +148,16 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
             .clone()
             .then(op.then(unary_op).repeated())
             .foldl(|a, (kind, b)| {
-                Expr::BinOp(BinOp {
-                    kind,
-                    lhs: Box::new(a),
-                    rhs: Box::new(b),
-                    span: 0..0, // lol todo
-                })
+                let span = a.span.start..b.span.end;
+                Expr {
+                    kind: ExprKind::BinOp(BinOp {
+                        kind,
+                        lhs: Box::new(a),
+                        rhs: Box::new(b),
+                        span: span.clone(),
+                    }),
+                    span,
+                }
             });
 
         // Sum ops (add and subtract) have equal precedence
@@ -144,15 +168,18 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
             .clone()
             .then(op.then(product).repeated())
             .foldl(|a, (kind, b)| {
-                Expr::BinOp(BinOp {
-                    kind,
-                    lhs: Box::new(a),
-                    rhs: Box::new(b),
-                    span: 0..0, // lol todo
-                })
+                let span = a.span.start..b.span.end;
+                Expr {
+                    kind: ExprKind::BinOp(BinOp {
+                        kind,
+                        lhs: Box::new(a),
+                        rhs: Box::new(b),
+                        span: span.clone(),
+                    }),
+                    span,
+                }
             })
             .labelled("product")
-            .debug("product")
             .boxed();
 
         // Comparison ops (equal, not-equal) have equal precedence
@@ -163,12 +190,16 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
             .clone()
             .then(op.then(sum).repeated())
             .foldl(|a, (kind, b)| {
-                Expr::BinOp(BinOp {
-                    kind,
-                    lhs: Box::new(a),
-                    rhs: Box::new(b),
-                    span: 0..0, // lol todo
-                })
+                let span = a.span.start..b.span.end;
+                Expr {
+                    kind: ExprKind::BinOp(BinOp {
+                        kind,
+                        lhs: Box::new(a),
+                        rhs: Box::new(b),
+                        span: span.clone(),
+                    }),
+                    span,
+                }
             });
         compare.labelled("comparison").boxed()
     })

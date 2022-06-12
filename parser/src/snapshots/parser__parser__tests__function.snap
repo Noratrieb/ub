@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 344
 expression: r
 ---
 (
@@ -21,24 +20,33 @@ expression: r
                         span: 0..26,
                         body: [
                             Expr(
-                                BinOp(
-                                    BinOp {
-                                        kind: Add,
-                                        lhs: Literal(
-                                            Integer(
-                                                1,
-                                                18..19,
-                                            ),
-                                        ),
-                                        rhs: Literal(
-                                            Integer(
-                                                5,
-                                                22..23,
-                                            ),
-                                        ),
-                                        span: 0..0,
-                                    },
-                                ),
+                                Expr {
+                                    kind: BinOp(
+                                        BinOp {
+                                            kind: Add,
+                                            lhs: Expr {
+                                                kind: Literal(
+                                                    Integer(
+                                                        1,
+                                                        18..19,
+                                                    ),
+                                                ),
+                                                span: 18..19,
+                                            },
+                                            rhs: Expr {
+                                                kind: Literal(
+                                                    Integer(
+                                                        5,
+                                                        22..23,
+                                                    ),
+                                                ),
+                                                span: 22..23,
+                                            },
+                                            span: 18..23,
+                                        },
+                                    ),
+                                    span: 18..23,
+                                },
                             ),
                         ],
                     },

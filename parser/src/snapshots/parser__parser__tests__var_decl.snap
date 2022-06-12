@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 368
 expression: r
 ---
 (
@@ -28,12 +27,15 @@ expression: r
                                         kind: U64,
                                     },
                                     rhs: Some(
-                                        Literal(
-                                            Integer(
-                                                5,
-                                                30..31,
+                                        Expr {
+                                            kind: Literal(
+                                                Integer(
+                                                    5,
+                                                    30..31,
+                                                ),
                                             ),
-                                        ),
+                                            span: 30..31,
+                                        },
                                     ),
                                     span: 0..0,
                                 },

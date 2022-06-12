@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 338
 expression: r
 ---
 (
@@ -16,38 +15,56 @@ expression: r
                         span: 0..32,
                         body: [
                             Expr(
-                                BinOp(
-                                    BinOp {
-                                        kind: Add,
-                                        lhs: BinOp(
-                                            BinOp {
-                                                kind: Div,
-                                                lhs: Literal(
-                                                    Integer(
-                                                        4,
-                                                        13..14,
-                                                    ),
-                                                ),
-                                                rhs: Call(
-                                                    Call {
-                                                        callee: Name(
-                                                            "hallo",
-                                                        ),
-                                                        args: [],
+                                Expr {
+                                    kind: BinOp(
+                                        BinOp {
+                                            kind: Add,
+                                            lhs: Expr {
+                                                kind: BinOp(
+                                                    BinOp {
+                                                        kind: Div,
+                                                        lhs: Expr {
+                                                            kind: Literal(
+                                                                Integer(
+                                                                    4,
+                                                                    13..14,
+                                                                ),
+                                                            ),
+                                                            span: 13..14,
+                                                        },
+                                                        rhs: Expr {
+                                                            kind: Call(
+                                                                Call {
+                                                                    callee: Expr {
+                                                                        kind: Name(
+                                                                            "hallo",
+                                                                        ),
+                                                                        span: 17..22,
+                                                                    },
+                                                                    args: [],
+                                                                },
+                                                            ),
+                                                            span: 17..22,
+                                                        },
+                                                        span: 13..22,
                                                     },
                                                 ),
-                                                span: 0..0,
+                                                span: 13..22,
                                             },
-                                        ),
-                                        rhs: Literal(
-                                            Integer(
-                                                5,
-                                                28..29,
-                                            ),
-                                        ),
-                                        span: 0..0,
-                                    },
-                                ),
+                                            rhs: Expr {
+                                                kind: Literal(
+                                                    Integer(
+                                                        5,
+                                                        28..29,
+                                                    ),
+                                                ),
+                                                span: 28..29,
+                                            },
+                                            span: 13..29,
+                                        },
+                                    ),
+                                    span: 13..29,
+                                },
                             ),
                         ],
                     },

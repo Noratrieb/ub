@@ -34,12 +34,15 @@ expression: r
                                         ),
                                     },
                                     rhs: Some(
-                                        Literal(
-                                            Integer(
-                                                2,
-                                                36..37,
+                                        Expr {
+                                            kind: Literal(
+                                                Integer(
+                                                    2,
+                                                    36..37,
+                                                ),
                                             ),
-                                        ),
+                                            span: 36..37,
+                                        },
                                     ),
                                     span: 0..0,
                                 },
@@ -57,12 +60,15 @@ expression: r
                                         ),
                                     },
                                     rhs: Some(
-                                        Literal(
-                                            Integer(
-                                                25,
-                                                53..55,
+                                        Expr {
+                                            kind: Literal(
+                                                Integer(
+                                                    25,
+                                                    53..55,
+                                                ),
                                             ),
-                                        ),
+                                            span: 53..55,
+                                        },
                                     ),
                                     span: 0..0,
                                 },

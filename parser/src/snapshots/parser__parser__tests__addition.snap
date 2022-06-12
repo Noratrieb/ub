@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 332
 expression: r
 ---
 (
@@ -16,24 +15,33 @@ expression: r
                         span: 0..20,
                         body: [
                             Expr(
-                                BinOp(
-                                    BinOp {
-                                        kind: Add,
-                                        lhs: Literal(
-                                            Integer(
-                                                1,
-                                                12..13,
-                                            ),
-                                        ),
-                                        rhs: Literal(
-                                            Integer(
-                                                4,
-                                                16..17,
-                                            ),
-                                        ),
-                                        span: 0..0,
-                                    },
-                                ),
+                                Expr {
+                                    kind: BinOp(
+                                        BinOp {
+                                            kind: Add,
+                                            lhs: Expr {
+                                                kind: Literal(
+                                                    Integer(
+                                                        1,
+                                                        12..13,
+                                                    ),
+                                                ),
+                                                span: 12..13,
+                                            },
+                                            rhs: Expr {
+                                                kind: Literal(
+                                                    Integer(
+                                                        4,
+                                                        16..17,
+                                                    ),
+                                                ),
+                                                span: 16..17,
+                                            },
+                                            span: 12..17,
+                                        },
+                                    ),
+                                    span: 12..17,
+                                },
                             ),
                         ],
                     },

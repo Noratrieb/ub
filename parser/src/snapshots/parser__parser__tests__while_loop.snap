@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 362
 expression: r
 ---
 (
@@ -22,9 +21,12 @@ expression: r
                         body: [
                             WhileStmt(
                                 WhileStmt {
-                                    cond: Name(
-                                        "false",
-                                    ),
+                                    cond: Expr {
+                                        kind: Name(
+                                            "false",
+                                        ),
+                                        span: 24..29,
+                                    },
                                     body: [],
                                     span: 18..32,
                                 },
