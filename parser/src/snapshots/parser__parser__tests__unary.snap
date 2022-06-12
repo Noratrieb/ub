@@ -1,0 +1,116 @@
+---
+source: parser/src/parser.rs
+expression: r
+---
+(
+    Some(
+        File {
+            name: "parser__parser__tests",
+            items: [
+                FnDecl(
+                    FnDecl {
+                        name: "main",
+                        params: [],
+                        ret_ty: None,
+                        span: 0..63,
+                        body: [
+                            Expr(
+                                UnaryOp(
+                                    UnaryOp {
+                                        expr: UnaryOp(
+                                            UnaryOp {
+                                                expr: Literal(
+                                                    Integer(
+                                                        5,
+                                                        19..20,
+                                                    ),
+                                                ),
+                                                kind: Deref,
+                                                span: 0..0,
+                                            },
+                                        ),
+                                        kind: Neg,
+                                        span: 0..0,
+                                    },
+                                ),
+                            ),
+                            Expr(
+                                UnaryOp(
+                                    UnaryOp {
+                                        expr: Literal(
+                                            Integer(
+                                                5,
+                                                28..29,
+                                            ),
+                                        ),
+                                        kind: AddrOf,
+                                        span: 0..0,
+                                    },
+                                ),
+                            ),
+                            Expr(
+                                BinOp(
+                                    BinOp {
+                                        kind: Add,
+                                        lhs: Literal(
+                                            Integer(
+                                                2,
+                                                35..36,
+                                            ),
+                                        ),
+                                        rhs: UnaryOp(
+                                            UnaryOp {
+                                                expr: Literal(
+                                                    Integer(
+                                                        8,
+                                                        40..41,
+                                                    ),
+                                                ),
+                                                kind: AddrOf,
+                                                span: 0..0,
+                                            },
+                                        ),
+                                        span: 0..0,
+                                    },
+                                ),
+                            ),
+                            Expr(
+                                BinOp(
+                                    BinOp {
+                                        kind: Mul,
+                                        lhs: UnaryOp(
+                                            UnaryOp {
+                                                expr: Literal(
+                                                    Integer(
+                                                        6,
+                                                        48..49,
+                                                    ),
+                                                ),
+                                                kind: Deref,
+                                                span: 0..0,
+                                            },
+                                        ),
+                                        rhs: UnaryOp(
+                                            UnaryOp {
+                                                expr: Literal(
+                                                    Integer(
+                                                        8,
+                                                        53..54,
+                                                    ),
+                                                ),
+                                                kind: Deref,
+                                                span: 0..0,
+                                            },
+                                        ),
+                                        span: 0..0,
+                                    },
+                                ),
+                            ),
+                        ],
+                    },
+                ),
+            ],
+        },
+    ),
+    [],
+)

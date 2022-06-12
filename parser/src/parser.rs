@@ -31,7 +31,7 @@ fn ty_parser<'src>() -> impl Parser<Token<'src>, Ty, Error = Error<'src>> + Clon
         })
         .labelled("primitive type");
 
-        let ptr = just(Token::Asterisk)
+        let ptr = just(Token::Ptr)
             .ignore_then(ty_parser.clone())
             .map_with_span(|ty: Ty, span| Ty {
                 kind: TyKind::Ptr(Box::new(ty)),
@@ -63,15 +63,15 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
         })
         .labelled("literal");
 
-        // A list of expressions
-        let items = expr
+        let expr_list = expr
             .clone()
-            .chain(just(Token::Comma).ignore_then(expr.clone()).repeated())
-            .then_ignore(just(Token::Comma).or_not())
+            .separated_by(just(Token::Comma))
+            .allow_trailing()
             .or_not()
-            .map(|item| item.unwrap_or_default());
+            .map(|item| item.unwrap_or_default())
+            .boxed();
 
-        let array = items
+        let array = expr_list
             .clone()
             .delimited_by(just(Token::BracketO), just(Token::BracketC))
             .map(Expr::Array);
@@ -82,11 +82,13 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
             .or(expr
                 .clone()
                 .delimited_by(just(Token::ParenO), just(Token::ParenC)))
+            .debug("atom")
             .boxed();
 
         let call = atom
+            .clone()
             .then(
-                items
+                expr_list
                     .delimited_by(just(Token::ParenO), just(Token::ParenC))
                     .repeated(),
             )
@@ -95,23 +97,36 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
                     callee: Box::new(callee),
                     args,
                 })
-            });
+            })
+            .labelled("call")
+            .boxed();
 
-        // let _unary_op = just(Token::Minus)
-        //     .to(UnaryOpKind::Neg)
-        //     .or(just(Token::Bang).to(UnaryOpKind::Not))
-        //     .or(just(Token::Asterisk).to(UnaryOpKind::Deref))
-        //     .or(just(Token::Ampersand).to(UnaryOpKind::AddrOf));
-
-        // todo: unary
+        let unary_op = choice((
+            just(Token::Minus).to(UnaryOpKind::Neg),
+            just(Token::Bang).to(UnaryOpKind::Not),
+            just(Token::Ampersand).to(UnaryOpKind::AddrOf),
+            just(Token::Asterisk).to(UnaryOpKind::Deref),
+        ))
+        .repeated()
+        .then(call)
+        .foldr(|kind, rhs| {
+            Expr::UnaryOp(UnaryOp {
+                expr: Box::new(rhs),
+                kind,
+                span: 0..0, // lol todo
+            })
+        })
+        .labelled("unary")
+        .debug("unary")
+        .boxed();
 
         let op = just(Token::Asterisk)
             .to(BinOpKind::Mul)
             .or(just(Token::Slash).to(BinOpKind::Div));
 
-        let product = call
+        let product = unary_op
             .clone()
-            .then(op.then(call).repeated())
+            .then(op.then(unary_op).repeated())
             .foldl(|a, (kind, b)| {
                 Expr::BinOp(BinOp {
                     kind,
@@ -135,7 +150,10 @@ fn expr_parser<'src>() -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + 
                     rhs: Box::new(b),
                     span: 0..0, // lol todo
                 })
-            });
+            })
+            .labelled("product")
+            .debug("product")
+            .boxed();
 
         // Comparison ops (equal, not-equal) have equal precedence
         let op = just(Token::EqEq)
@@ -170,7 +188,8 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
                     rhs: Some(rhs),
                     span: Default::default(),
                 })
-            });
+            })
+            .boxed();
 
         let assignment = expr_parser()
             .then_ignore(just(Token::Eq))
@@ -215,7 +234,8 @@ fn statement_parser<'src>() -> impl Parser<Token<'src>, Stmt, Error = Error<'src
                     span,
                 })
         })
-        .map(Stmt::IfStmt);
+        .map(Stmt::IfStmt)
+        .boxed();
 
         var_decl
             .or(assignment)
@@ -307,7 +327,7 @@ where
     I: 'src,
     I: Iterator<Item = (Token<'src>, Span)>,
 {
-    file_parser(file_name).parse_recovery(Stream::from_iter(len..len + 1, lexer))
+    file_parser(file_name).parse_recovery_verbose(Stream::from_iter(len..len + 1, lexer))
 }
 
 #[cfg(test)]
@@ -392,7 +412,7 @@ mod tests {
 
     #[test]
     fn types() {
-        let r = parse("fn types() -> *u64 { Test test = 2; *u64 int = 25; }");
+        let r = parse("fn types() -> ptr u64 { Test test = 2; ptr u64 int = 25; }");
         insta::assert_debug_snapshot!(r);
     }
 }

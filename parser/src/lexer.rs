@@ -78,6 +78,8 @@ pub enum Token<'a> {
     While,
     #[token("loop")]
     Loop,
+    #[token("ptr")]
+    Ptr,
 
     #[regex(r"[a-zA-Z_]\w*")]
     Ident(&'a str),
@@ -131,6 +133,7 @@ impl<'a> Display for Token<'a> {
             Token::Else => f.write_str("else"),
             Token::While => f.write_str("while"),
             Token::Loop => f.write_str("loop"),
+            Token::Ptr => f.write_str("ptr"),
             Token::Ident(ident) => write!(f, "identifier `{ident}`"),
             Token::String(str) => write!(f, "\"{str}\""),
             Token::Integer(int) => write!(f, "{int}"),

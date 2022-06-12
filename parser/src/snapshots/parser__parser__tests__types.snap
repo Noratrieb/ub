@@ -1,6 +1,5 @@
 ---
 source: parser/src/parser.rs
-assertion_line: 382
 expression: r
 ---
 (
@@ -14,22 +13,22 @@ expression: r
                         params: [],
                         ret_ty: Some(
                             Ty {
-                                span: 14..18,
+                                span: 14..21,
                                 kind: Ptr(
                                     Ty {
-                                        span: 15..18,
+                                        span: 18..21,
                                         kind: U64,
                                     },
                                 ),
                             },
                         ),
-                        span: 0..52,
+                        span: 0..58,
                         body: [
                             VarDecl(
                                 VarDecl {
                                     name: "test",
                                     ty: Ty {
-                                        span: 21..25,
+                                        span: 24..28,
                                         kind: Name(
                                             "Test",
                                         ),
@@ -38,7 +37,7 @@ expression: r
                                         Literal(
                                             Integer(
                                                 2,
-                                                33..34,
+                                                36..37,
                                             ),
                                         ),
                                     ),
@@ -49,10 +48,10 @@ expression: r
                                 VarDecl {
                                     name: "int",
                                     ty: Ty {
-                                        span: 36..40,
+                                        span: 39..46,
                                         kind: Ptr(
                                             Ty {
-                                                span: 37..40,
+                                                span: 43..46,
                                                 kind: U64,
                                             },
                                         ),
@@ -61,7 +60,7 @@ expression: r
                                         Literal(
                                             Integer(
                                                 25,
-                                                47..49,
+                                                53..55,
                                             ),
                                         ),
                                     ),
