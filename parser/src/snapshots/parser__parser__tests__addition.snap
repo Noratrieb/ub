@@ -12,6 +12,9 @@ expression: r
                         name: "main",
                         params: [],
                         ret_ty: None,
+                        id: NodeId(
+                            6,
+                        ),
                         span: 0..20,
                         body: [
                             Expr(
@@ -26,6 +29,9 @@ expression: r
                                                         12..13,
                                                     ),
                                                 ),
+                                                id: NodeId(
+                                                    3,
+                                                ),
                                                 span: 12..13,
                                             },
                                             rhs: Expr {
@@ -35,10 +41,16 @@ expression: r
                                                         16..17,
                                                     ),
                                                 ),
+                                                id: NodeId(
+                                                    4,
+                                                ),
                                                 span: 16..17,
                                             },
                                             span: 12..17,
                                         },
+                                    ),
+                                    id: NodeId(
+                                        5,
                                     ),
                                     span: 12..17,
                                 },

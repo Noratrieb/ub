@@ -1,5 +1,8 @@
 use std::{ops::Range, path::PathBuf};
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct NodeId(u32);
+
 type Span = Range<usize>;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -32,6 +35,7 @@ pub struct FnDecl {
     pub name: String,
     pub params: Vec<NameTyPair>,
     pub ret_ty: Option<Ty>,
+    pub id: NodeId,
     pub span: Span,
     pub body: Vec<Stmt>,
 }
@@ -40,6 +44,7 @@ pub struct FnDecl {
 pub struct NameTyPair {
     pub name: String,
     pub ty: Ty,
+    pub id: NodeId,
     pub span: Span,
 }
 
@@ -47,6 +52,7 @@ pub struct NameTyPair {
 pub struct StructDecl {
     pub name: String,
     pub fields: Vec<NameTyPair>,
+    pub id: NodeId,
     pub span: Span,
 }
 
@@ -106,6 +112,7 @@ pub struct LoopStmt {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Expr {
     pub kind: ExprKind,
+    pub id: NodeId,
     pub span: Span,
 }
 
@@ -182,4 +189,10 @@ pub struct Call {
 pub enum Literal {
     String(String, Span),
     Integer(u64, Span),
+}
+
+impl NodeId {
+    pub(crate) fn new(id: u32) -> Self {
+        Self(id)
+    }
 }

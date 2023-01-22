@@ -17,6 +17,9 @@ expression: r
                                 kind: U64,
                             },
                         ),
+                        id: NodeId(
+                            1,
+                        ),
                         span: 0..39,
                         body: [
                             IfStmt(
@@ -24,6 +27,9 @@ expression: r
                                     cond: Expr {
                                         kind: Name(
                                             "false",
+                                        ),
+                                        id: NodeId(
+                                            0,
                                         ),
                                         span: 21..26,
                                     },

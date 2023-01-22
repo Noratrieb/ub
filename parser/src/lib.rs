@@ -28,8 +28,9 @@ fn main() {
 
     let lexer = Token::lexer(src);
     let len = lexer.source().len();
+    let state = parser::ParserState::default();
 
-    let (file, errors) = parser::parse(lexer.spanned(), len, "test_file".into());
+    let (file, errors) = parser::parse(lexer.spanned(), &state, len, "test_file".into());
 
     if let Some(file) = file {
         println!("AST: {file:#?}");

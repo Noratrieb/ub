@@ -17,6 +17,9 @@ expression: r
                                 kind: U64,
                             },
                         ),
+                        id: NodeId(
+                            1,
+                        ),
                         span: 0..34,
                         body: [
                             VarDecl(
@@ -33,6 +36,9 @@ expression: r
                                                     5,
                                                     30..31,
                                                 ),
+                                            ),
+                                            id: NodeId(
+                                                0,
                                             ),
                                             span: 30..31,
                                         },

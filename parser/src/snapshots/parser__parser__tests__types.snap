@@ -22,6 +22,9 @@ expression: r
                                 ),
                             },
                         ),
+                        id: NodeId(
+                            2,
+                        ),
                         span: 0..58,
                         body: [
                             VarDecl(
@@ -40,6 +43,9 @@ expression: r
                                                     2,
                                                     36..37,
                                                 ),
+                                            ),
+                                            id: NodeId(
+                                                0,
                                             ),
                                             span: 36..37,
                                         },
@@ -66,6 +72,9 @@ expression: r
                                                     25,
                                                     53..55,
                                                 ),
+                                            ),
+                                            id: NodeId(
+                                                1,
                                             ),
                                             span: 53..55,
                                         },

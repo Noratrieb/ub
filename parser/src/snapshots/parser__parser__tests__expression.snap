@@ -12,6 +12,9 @@ expression: r
                         name: "main",
                         params: [],
                         ret_ty: None,
+                        id: NodeId(
+                            12,
+                        ),
                         span: 0..32,
                         body: [
                             Expr(
@@ -30,6 +33,9 @@ expression: r
                                                                     13..14,
                                                                 ),
                                                             ),
+                                                            id: NodeId(
+                                                                6,
+                                                            ),
                                                             span: 13..14,
                                                         },
                                                         rhs: Expr {
@@ -39,15 +45,24 @@ expression: r
                                                                         kind: Name(
                                                                             "hallo",
                                                                         ),
+                                                                        id: NodeId(
+                                                                            7,
+                                                                        ),
                                                                         span: 17..22,
                                                                     },
                                                                     args: [],
                                                                 },
                                                             ),
+                                                            id: NodeId(
+                                                                8,
+                                                            ),
                                                             span: 17..22,
                                                         },
                                                         span: 13..22,
                                                     },
+                                                ),
+                                                id: NodeId(
+                                                    9,
                                                 ),
                                                 span: 13..22,
                                             },
@@ -58,10 +73,16 @@ expression: r
                                                         28..29,
                                                     ),
                                                 ),
+                                                id: NodeId(
+                                                    10,
+                                                ),
                                                 span: 28..29,
                                             },
                                             span: 13..29,
                                         },
+                                    ),
+                                    id: NodeId(
+                                        11,
                                     ),
                                     span: 13..29,
                                 },
