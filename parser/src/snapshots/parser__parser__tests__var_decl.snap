@@ -18,31 +18,75 @@ expression: r
                             },
                         ),
                         id: NodeId(
-                            1,
+                            2,
                         ),
-                        span: 0..34,
+                        span: 0..80,
                         body: [
                             VarDecl(
                                 VarDecl {
                                     name: "hello",
-                                    ty: Ty {
-                                        span: 18..21,
-                                        kind: U64,
-                                    },
+                                    ty: Some(
+                                        Ty {
+                                            span: 29..32,
+                                            kind: U64,
+                                        },
+                                    ),
                                     rhs: Some(
                                         Expr {
                                             kind: Literal(
                                                 Integer(
                                                     5,
-                                                    30..31,
+                                                    35..36,
                                                 ),
                                             ),
                                             id: NodeId(
                                                 0,
                                             ),
-                                            span: 30..31,
+                                            span: 35..36,
                                         },
                                     ),
+                                    span: 0..0,
+                                },
+                            ),
+                            VarDecl(
+                                VarDecl {
+                                    name: "owo",
+                                    ty: None,
+                                    rhs: Some(
+                                        Expr {
+                                            kind: Literal(
+                                                Integer(
+                                                    0,
+                                                    48..49,
+                                                ),
+                                            ),
+                                            id: NodeId(
+                                                1,
+                                            ),
+                                            span: 48..49,
+                                        },
+                                    ),
+                                    span: 0..0,
+                                },
+                            ),
+                            VarDecl(
+                                VarDecl {
+                                    name: "nice",
+                                    ty: Some(
+                                        Ty {
+                                            span: 61..64,
+                                            kind: U64,
+                                        },
+                                    ),
+                                    rhs: None,
+                                    span: 0..0,
+                                },
+                            ),
+                            VarDecl(
+                                VarDecl {
+                                    name: "nothing",
+                                    ty: None,
+                                    rhs: None,
                                     span: 0..0,
                                 },
                             ),

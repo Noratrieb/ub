@@ -70,7 +70,7 @@ pub enum Stmt {
 #[derive(Debug, Clone, PartialEq)]
 pub struct VarDecl {
     pub name: String,
-    pub ty: Ty,
+    pub ty: Option<Ty>,
     pub rhs: Option<Expr>,
     pub span: Span,
 }

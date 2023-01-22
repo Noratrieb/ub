@@ -233,16 +233,16 @@ fn statement_parser<'src>(
     state: &'src ParserState,
 ) -> impl Parser<Token<'src>, Stmt, Error = Error<'src>> + Clone {
     recursive(|stmt| {
-        let var_decl = ty_parser()
-            .then(ident_parser())
-            .then_ignore(just(Token::Eq))
-            .then(expr_parser(state))
+        let var_decl = just(Token::Let)
+            .ignore_then(ident_parser())
+            .then(just(Token::Colon).ignore_then(ty_parser()).or_not())
+            .then(just(Token::Eq).ignore_then(expr_parser(state)).or_not())
             .then_ignore(just(Token::Semi))
-            .map(|((ty, name), rhs)| {
+            .map(|((name, ty), rhs)| {
                 Stmt::VarDecl(VarDecl {
                     name,
                     ty,
-                    rhs: Some(rhs),
+                    rhs,
                     span: Default::default(),
                 })
             })
@@ -492,7 +492,7 @@ mod tests {
     fn var_decl() {
         let state = ParserState::default();
 
-        let r = parse("fn foo() -> u64 { u64 hello = 5; }", &state);
+        let r = parse("fn foo() -> u64 { let hello: u64 = 5; let owo = 0; let nice: u64; let nothing; }", &state);
         insta::assert_debug_snapshot!(r);
     }
 
@@ -509,7 +509,7 @@ mod tests {
         let state = ParserState::default();
 
         let r = parse(
-            "fn types() -> ptr u64 { Test test = 2; ptr u64 int = 25; }",
+            "fn types() -> ptr u64 { let test: Test = 2; let int: ptr u64 = 25; }",
             &state,
         );
         insta::assert_debug_snapshot!(r);
