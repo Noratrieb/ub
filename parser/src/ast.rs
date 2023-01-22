@@ -122,7 +122,6 @@ pub enum ExprKind {
     UnaryOp(UnaryOp),
     FieldAccess(FieldAccess),
     Call(Call),
-    Deref(Box<Expr>),
     Literal(Literal),
     Name(String),
     Array(Vec<Expr>),

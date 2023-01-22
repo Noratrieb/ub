@@ -11,6 +11,7 @@ use crate::lexer::Token;
 mod ast;
 mod lexer;
 mod parser;
+mod pretty;
 
 pub fn parse(_str: &str, _file_name: PathBuf) -> Result<ast::File, ()> {
     todo!()
@@ -18,11 +19,15 @@ pub fn parse(_str: &str, _file_name: PathBuf) -> Result<ast::File, ()> {
 
 pub fn test() {
     let src = "
-fn main() {
-    //-(*5);
-    //&5;
-    //2 + &8;
-    *6 * *8; // :)
+fn main(uwu: u64, owo: ptr WOW) -> ptr u64 {
+    let uwu = &1;
+    let owo = yeet(1+2*3, AA);
+
+    if 1 { 
+        10;
+    } else {}
+
+    if 1 { if 1 { if 1 {} } }
 }
 ";
 
@@ -33,7 +38,7 @@ fn main() {
     let (file, errors) = parser::parse(lexer.spanned(), &state, len, "test_file".into());
 
     if let Some(file) = file {
-        println!("AST: {file:#?}");
+        println!("{}", pretty::pretty_print_ast(&file));
     }
 
     errors
