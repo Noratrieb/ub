@@ -7,12 +7,12 @@ expression: tokens
         "\"hello friend\"",
     ),
     Integer(
-        "5",
+        5,
     ),
     String(
         "\"morning\"",
     ),
     Integer(
-        "3263475",
+        3263475,
     ),
 ]

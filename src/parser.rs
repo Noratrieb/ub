@@ -445,44 +445,37 @@ pub fn parse(db: &dyn Db, source: SourceProgram) -> Option<File> {
     result
 }
 
-#[cfg(disabled)]
+#[cfg(test)]
 mod tests {
-    use std::{fmt::Debug, path::PathBuf};
+    use std::fmt::Debug;
 
-    use logos::Logos;
+    use crate::{Database, Diagnostics, SourceProgram};
 
-    use super::ParserState;
-    use crate::lexer::Token;
+    fn parse<'src>(src: &'src str) -> impl Debug + 'src {
+        let db = Database::default();
+        let source_program = SourceProgram::new(&db, src.to_string(), "uwu.ub".into());
 
-    fn parse<'src>(src: &'src str, state: &'src ParserState) -> impl Debug + 'src {
-        let lexer = Token::lexer(src);
-        let len = lexer.source().len();
+        let file = super::parse(&db, source_program);
 
-        super::parse(
-            lexer.spanned(),
-            state,
-            len,
-            PathBuf::from(module_path!().replace("::", "__")),
-        )
+        let errs = super::parse::accumulated::<Diagnostics>(&db, source_program);
+
+        (file, errs)
     }
 
     #[test]
     fn addition() {
-        let state = ParserState::default();
-        let r = parse("fn main() { 1 + 4; }", &state);
+        let r = parse("fn main() { 1 + 4; }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn expression() {
-        let state = ParserState::default();
-        let r = parse("fn main() { (4 / hallo()) + 5; }", &state);
+        let r = parse("fn main() { (4 / hallo()) + 5; }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn unary() {
-        let state = ParserState::default();
         let r = parse(
             "fn main() {
     -(*5);
@@ -490,69 +483,51 @@ mod tests {
     2 + &8;
     *6 * *8; // :)
 }",
-            &state,
         );
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn function() {
-        let state = ParserState::default();
-        let r = parse("fn foo() -> u64 { 1 + 5; }", &state);
+        let r = parse("fn foo() -> u64 { 1 + 5; }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn if_no_else() {
-        let state = ParserState::default();
-
-        let r = parse("fn foo() -> u64 { if false {} }", &state);
+        let r = parse("fn foo() -> u64 { if false {} }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn if_else() {
-        let state = ParserState::default();
-
-        let r = parse("fn foo() -> u64 { if false {} else {} }", &state);
+        let r = parse("fn foo() -> u64 { if false {} else {} }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn while_loop() {
-        let state = ParserState::default();
-
-        let r = parse("fn foo() -> u64 { while false {} }", &state);
+        let r = parse("fn foo() -> u64 { while false {} }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn var_decl() {
-        let state = ParserState::default();
-
         let r = parse(
             "fn foo() -> u64 { let hello: u64 = 5; let owo = 0; let nice: u64; let nothing; }",
-            &state,
         );
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn struct_() {
-        let state = ParserState::default();
-
-        let r = parse("struct X { y: u64, x: u64 }", &state);
+        let r = parse("struct X { y: u64, x: u64 }");
         insta::assert_debug_snapshot!(r);
     }
 
     #[test]
     fn types() {
-        let state = ParserState::default();
-
-        let r = parse(
-            "fn types() -> ptr u64 { let test: Test = 2; let int: ptr u64 = 25; }",
-            &state,
-        );
+        let r = parse("fn types() -> ptr u64 { let test: Test = 2; let int: ptr u64 = 25; }");
         insta::assert_debug_snapshot!(r);
     }
 }

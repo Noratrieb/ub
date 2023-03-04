@@ -5,7 +5,7 @@ expression: r
 (
     Some(
         File {
-            name: "ub__parser__tests",
+            name: "uwu.ub",
             items: [
                 FnDecl(
                     FnDecl {
@@ -14,7 +14,9 @@ expression: r
                         ret_ty: Some(
                             Ty {
                                 span: 12..15,
-                                kind: U64,
+                                kind: Name(
+                                    "u64",
+                                ),
                             },
                         ),
                         id: NodeId(
@@ -28,7 +30,9 @@ expression: r
                                     ty: Some(
                                         Ty {
                                             span: 29..32,
-                                            kind: U64,
+                                            kind: Name(
+                                                "u64",
+                                            ),
                                         },
                                     ),
                                     rhs: Some(
@@ -75,7 +79,9 @@ expression: r
                                     ty: Some(
                                         Ty {
                                             span: 61..64,
-                                            kind: U64,
+                                            kind: Name(
+                                                "u64",
+                                            ),
                                         },
                                     ),
                                     rhs: None,

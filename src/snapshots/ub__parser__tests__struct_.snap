@@ -5,7 +5,7 @@ expression: r
 (
     Some(
         File {
-            name: "ub__parser__tests",
+            name: "uwu.ub",
             items: [
                 StructDecl(
                     StructDecl {
@@ -15,7 +15,9 @@ expression: r
                                 name: "y",
                                 ty: Ty {
                                     span: 14..17,
-                                    kind: U64,
+                                    kind: Name(
+                                        "u64",
+                                    ),
                                 },
                                 id: NodeId(
                                     0,
@@ -26,7 +28,9 @@ expression: r
                                 name: "x",
                                 ty: Ty {
                                     span: 22..25,
-                                    kind: U64,
+                                    kind: Name(
+                                        "u64",
+                                    ),
                                 },
                                 id: NodeId(
                                     1,
