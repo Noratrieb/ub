@@ -55,6 +55,7 @@ impl Printer {
                     self.word(" ");
                 }
                 self.print_block(&fn_decl.body);
+                self.linebreak();
             }
             Item::StructDecl(_) => {
                 todo!()

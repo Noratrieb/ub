@@ -4,6 +4,7 @@
 use std::path::PathBuf;
 
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source};
+use chumsky::prelude::Simple;
 use logos::Logos;
 
 use crate::lexer::Token;
@@ -23,12 +24,14 @@ fn main(uwu: u64, owo: ptr WOW) -> ptr u64 {
     let uwu = &1;
     let owo = yeet(1+2*3, AA);
 
-    if 1 { 
+    if 1 {
         10;
     } else {}
 
     if 1 { if 1 { if 1 {} } }
 }
+
+fn aa() {}
 ";
 
     let lexer = Token::lexer(src);
@@ -41,6 +44,10 @@ fn main(uwu: u64, owo: ptr WOW) -> ptr u64 {
         println!("{}", pretty::pretty_print_ast(&file));
     }
 
+    report_errors(src, errors);
+}
+
+fn report_errors(src: &str, errors: Vec<Simple<Token<'_>>>) {
     errors
         .into_iter()
         .map(|e| e.map(|c| c.to_string()))
