@@ -451,7 +451,7 @@ mod tests {
 
     use crate::{Database, Diagnostics, SourceProgram};
 
-    fn parse<'src>(src: &'src str) -> impl Debug + 'src {
+    fn parse(src: &str) -> impl Debug {
         let db = Database::default();
         let source_program = SourceProgram::new(&db, src.to_string(), "uwu.ub".into());
 
