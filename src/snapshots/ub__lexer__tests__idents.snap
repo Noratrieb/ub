@@ -1,6 +1,5 @@
 ---
-source: parser/src/lexer.rs
-assertion_line: 125
+source: src/lexer.rs
 expression: tokens
 ---
 [

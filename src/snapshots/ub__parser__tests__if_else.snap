@@ -1,11 +1,11 @@
 ---
-source: parser/src/parser.rs
+source: src/parser.rs
 expression: r
 ---
 (
     Some(
         File {
-            name: "parser__parser__tests",
+            name: "ub__parser__tests",
             items: [
                 FnDecl(
                     FnDecl {
@@ -20,10 +20,10 @@ expression: r
                         id: NodeId(
                             1,
                         ),
-                        span: 0..34,
+                        span: 0..39,
                         body: [
-                            WhileStmt(
-                                WhileStmt {
+                            IfStmt(
+                                IfStmt {
                                     cond: Expr {
                                         kind: Name(
                                             "false",
@@ -31,10 +31,16 @@ expression: r
                                         id: NodeId(
                                             0,
                                         ),
-                                        span: 24..29,
+                                        span: 21..26,
                                     },
                                     body: [],
-                                    span: 18..32,
+                                    else_part: Some(
+                                        Else(
+                                            [],
+                                            35..37,
+                                        ),
+                                    ),
+                                    span: 18..37,
                                 },
                             ),
                         ],

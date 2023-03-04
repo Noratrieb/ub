@@ -1,11 +1,11 @@
 ---
-source: parser/src/parser.rs
+source: src/parser.rs
 expression: r
 ---
 (
     Some(
         File {
-            name: "parser__parser__tests",
+            name: "ub__parser__tests",
             items: [
                 FnDecl(
                     FnDecl {
