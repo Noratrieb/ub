@@ -4,9 +4,7 @@
 use std::path::PathBuf;
 
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source};
-use chumsky::prelude::Simple;
-
-use crate::lexer::Token;
+use parser::Error;
 
 mod ast;
 mod lexer;
@@ -29,7 +27,7 @@ pub trait Db: salsa::DbWithJar<Jar> {}
 impl<DB> Db for DB where DB: ?Sized + salsa::DbWithJar<Jar> {}
 
 #[salsa::accumulator]
-pub struct Diagnostics(Simple<Token>);
+pub struct Diagnostics(Error);
 
 #[derive(Default)]
 #[salsa::db(crate::Jar)]
@@ -60,13 +58,15 @@ fn aa() {}
     let db = Database::default();
     let source_program = SourceProgram::new(&db, src.to_string(), "uwu.ub".into());
 
-    let (file, errors) = parser::parse(&db, source_program);
+    let file = parser::parse(&db, source_program);
 
     if let Some(file) = file {
         println!("{}", pretty::pretty_print_ast(&file));
     }
 
-    report_errors(src, errors);
+    let errs = parser::parse::accumulated::<Diagnostics>(&db, source_program);
+
+    report_errors(src, errs);
 }
 
 fn report_errors(src: &str, errors: Vec<parser::Error>) {

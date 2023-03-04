@@ -10,7 +10,7 @@ use crate::{
         WhileStmt,
     },
     lexer::Token,
-    SourceProgram,
+    Db, Diagnostics, SourceProgram,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -430,13 +430,18 @@ fn file_parser<'src>(
 }
 
 #[salsa::tracked]
-pub fn parse(db: &dyn crate::Db, source: SourceProgram) -> (Option<File>, Vec<Error>) {
+pub fn parse(db: &dyn Db, source: SourceProgram) -> Option<File> {
     let lexer = Token::lexer(source.text(db));
     let len = lexer.source().len();
     let state = ParserState::default();
 
-    let result = file_parser(source.file_name(db).clone(), &state)
+    let (result, errs) = file_parser(source.file_name(db).clone(), &state)
         .parse_recovery_verbose(Stream::from_iter(len..len + 1, lexer.spanned()));
+
+    for err in errs {
+        Diagnostics::push(db, err);
+    }
+
     result
 }
 
