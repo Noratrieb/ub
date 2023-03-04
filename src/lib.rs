@@ -5,7 +5,6 @@ use std::path::PathBuf;
 
 use ariadne::{Color, Fmt, Label, Report, ReportKind, Source};
 use chumsky::prelude::Simple;
-use logos::Logos;
 
 use crate::lexer::Token;
 
@@ -14,9 +13,33 @@ mod lexer;
 mod parser;
 mod pretty;
 
-pub fn parse(_str: &str, _file_name: PathBuf) -> Result<ast::File, ()> {
-    todo!()
+#[salsa::input]
+pub struct SourceProgram {
+    #[return_ref]
+    pub text: String,
+    #[return_ref]
+    pub file_name: PathBuf,
 }
+
+#[salsa::jar(db = Db)]
+pub struct Jar(SourceProgram, Diagnostics, crate::parser::parse);
+
+pub trait Db: salsa::DbWithJar<Jar> {}
+
+impl<DB> Db for DB where DB: ?Sized + salsa::DbWithJar<Jar> {}
+
+#[salsa::accumulator]
+pub struct Diagnostics(Simple<Token>);
+
+#[derive(Default)]
+#[salsa::db(crate::Jar)]
+pub(crate) struct Database {
+    storage: salsa::Storage<Self>,
+}
+
+impl salsa::Database for Database {}
+
+// aaa
 
 pub fn test() {
     let src = "
@@ -34,11 +57,10 @@ fn main(uwu: u64, owo: ptr WOW) -> ptr u64 {
 fn aa() {}
 ";
 
-    let lexer = Token::lexer(src);
-    let len = lexer.source().len();
-    let state = parser::ParserState::default();
+    let db = Database::default();
+    let source_program = SourceProgram::new(&db, src.to_string(), "uwu.ub".into());
 
-    let (file, errors) = parser::parse(lexer.spanned(), &state, len, "test_file".into());
+    let (file, errors) = parser::parse(&db, source_program);
 
     if let Some(file) = file {
         println!("{}", pretty::pretty_print_ast(&file));
@@ -47,10 +69,10 @@ fn aa() {}
     report_errors(src, errors);
 }
 
-fn report_errors(src: &str, errors: Vec<Simple<Token<'_>>>) {
+fn report_errors(src: &str, errors: Vec<parser::Error>) {
     errors
         .into_iter()
-        .map(|e| e.map(|c| c.to_string()))
+        .map(|e| e.0.map(|c| c.to_string()))
         .for_each(|e| {
             let report = Report::build(ReportKind::Error, (), e.span().start);
 

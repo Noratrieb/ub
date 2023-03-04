@@ -71,7 +71,6 @@ impl Printer {
 
     fn print_ty(&mut self, ty: &Ty) {
         match &ty.kind {
-            TyKind::U64 => self.word("u64"),
             TyKind::Name(name) => self.word(name),
             TyKind::Ptr(ty) => {
                 self.word("ptr ");

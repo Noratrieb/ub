@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Formatter};
 use logos::Logos;
 
 #[derive(Logos, Debug, Clone, Hash, PartialEq, Eq)]
-pub enum Token<'a> {
+pub enum Token {
     #[regex("//[^\n]*", logos::skip)]
     Comment,
 
@@ -83,21 +83,21 @@ pub enum Token<'a> {
     #[token("let")]
     Let,
 
-    #[regex(r"[a-zA-Z_]\w*")]
-    Ident(&'a str),
+    #[regex(r"[a-zA-Z_]\w*", |lex| lex.slice().to_string())]
+    Ident(String),
 
-    #[regex(r##""[^"]*""##)]
-    String(&'a str),
+    #[regex(r##""[^"]*""##, |lex| lex.slice().to_string())]
+    String(String),
 
-    #[regex(r"\d+")]
-    Integer(&'a str),
+    #[regex(r"\d+", |lex| lex.slice().parse())]
+    Integer(u64),
 
     #[error]
     #[regex(r"[ \t\r\n]+", logos::skip)]
     Error,
 }
 
-impl<'a> Display for Token<'a> {
+impl Display for Token {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Token::Comment => f.write_str("comment"),
@@ -145,7 +145,7 @@ impl<'a> Display for Token<'a> {
     }
 }
 
-pub fn lex<'src>(code: &'src str) -> logos::Lexer<'_, Token<'src>> {
+pub fn lex<'src>(code: &'src str) -> logos::Lexer<'_, Token> {
     Token::lexer(code)
 }
 
@@ -153,7 +153,7 @@ pub fn lex<'src>(code: &'src str) -> logos::Lexer<'_, Token<'src>> {
 mod tests {
     use crate::lexer::Token;
 
-    fn lex_test(str: &str) -> Vec<Token<'_>> {
+    fn lex_test(str: &str) -> Vec<Token> {
         let lexer = super::lex(str);
         lexer.collect()
     }

@@ -1,36 +1,35 @@
 use std::{ops::Range, path::PathBuf};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NodeId(u32);
 
 type Span = Range<usize>;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct File {
     pub name: PathBuf,
     pub items: Vec<Item>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ty {
     pub span: Span,
     pub kind: TyKind,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TyKind {
-    U64,
     Ptr(Box<Ty>),
     Name(String),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
     FnDecl(FnDecl),
     StructDecl(StructDecl),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FnDecl {
     pub name: String,
     pub params: Vec<NameTyPair>,
@@ -40,7 +39,7 @@ pub struct FnDecl {
     pub body: Vec<Stmt>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NameTyPair {
     pub name: String,
     pub ty: Ty,
@@ -48,7 +47,7 @@ pub struct NameTyPair {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StructDecl {
     pub name: String,
     pub fields: Vec<NameTyPair>,
@@ -56,7 +55,7 @@ pub struct StructDecl {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stmt {
     VarDecl(VarDecl),
     Assignment(Assignment),
@@ -67,7 +66,7 @@ pub enum Stmt {
     Expr(Expr),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VarDecl {
     pub name: String,
     pub ty: Option<Ty>,
@@ -75,14 +74,14 @@ pub struct VarDecl {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Assignment {
     pub place: Expr,
     pub rhs: Expr,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IfStmt {
     pub cond: Expr,
     pub body: Vec<Stmt>,
@@ -90,33 +89,33 @@ pub struct IfStmt {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ElsePart {
     Else(Vec<Stmt>, Span),
     ElseIf(Box<IfStmt>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WhileStmt {
     pub cond: Expr,
     pub body: Vec<Stmt>,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LoopStmt {
     pub body: Vec<Stmt>,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Expr {
     pub kind: ExprKind,
     pub id: NodeId,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExprKind {
     BinOp(BinOp),
     UnaryOp(UnaryOp),
@@ -127,7 +126,7 @@ pub enum ExprKind {
     Array(Vec<Expr>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BinOp {
     pub kind: BinOpKind,
     pub lhs: Box<Expr>,
@@ -157,7 +156,7 @@ pub enum BinOpKind {
     Xor,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnaryOp {
     pub expr: Box<Expr>,
     pub kind: UnaryOpKind,
@@ -172,13 +171,13 @@ pub enum UnaryOpKind {
     AddrOf,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FieldAccess {
     pub expr: Box<Expr>,
     pub field_name: String,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Call {
     pub callee: Box<Expr>,
     pub args: Vec<Expr>,

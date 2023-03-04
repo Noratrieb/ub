@@ -10,5 +10,10 @@ ariadne = "0.1.5"
 chumsky = "0.8.0"
 logos = "0.12.0"
 
+[dependencies.salsa]
+git = "https://github.com/salsa-rs/salsa"
+rev = "ef7c0f12c8159e7025316e959c26f6278a576fa5"
+package = "salsa-2022"
+
 [dev-dependencies]
 insta = "1.13.0"

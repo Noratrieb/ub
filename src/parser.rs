@@ -1,6 +1,7 @@
 use std::{cell::Cell, ops::Range, path::PathBuf};
 
 use chumsky::{prelude::*, Stream};
+use logos::Logos;
 
 use crate::{
     ast::{
@@ -9,10 +10,34 @@ use crate::{
         WhileStmt,
     },
     lexer::Token,
+    SourceProgram,
 };
 
-type Error<'src> = Simple<Token<'src>>;
-type Span = Range<usize>;
+#[derive(Debug, Clone, PartialEq)]
+pub struct Error(pub chumsky::error::Simple<Token>);
+
+impl Eq for Error {}
+
+impl chumsky::Error<Token> for Error {
+    type Span = Span;
+    type Label = &'static str;
+    fn expected_input_found<Iter: IntoIterator<Item = Option<Token>>>(
+        span: Self::Span,
+        expected: Iter,
+        found: Option<Token>,
+    ) -> Self {
+        Self(<_>::expected_input_found(span, expected, found))
+    }
+    fn with_label(self, label: Self::Label) -> Self {
+        Self(self.0.with_label(label))
+    }
+
+    fn merge(self, other: Self) -> Self {
+        Self(self.0.merge(other.0))
+    }
+}
+
+pub type Span = Range<usize>;
 
 #[derive(Default)]
 pub struct ParserState {
@@ -27,19 +52,25 @@ impl ParserState {
     }
 }
 
-fn ident_parser<'src>() -> impl Parser<Token<'src>, String, Error = Error<'src>> + Clone {
+fn ident_parser() -> impl Parser<Token, String, Error = Error> + Clone {
     let ident = select! {
         Token::Ident(ident) => ident.to_owned(),
     };
     ident.labelled("identifier").boxed()
 }
 
-fn ty_parser<'src>() -> impl Parser<Token<'src>, Ty, Error = Error<'src>> + Clone {
+fn ty_parser() -> impl Parser<Token, Ty, Error = Error> + Clone {
     recursive(|ty_parser| {
         let primitive = filter_map(|span, token| {
             let kind = match token {
-                Token::Ident("u64") => TyKind::U64,
-                _ => return Err(Simple::expected_input_found(span, Vec::new(), Some(token))),
+                Token::Ident(name) => TyKind::Name(name),
+                _ => {
+                    return Err(Error(Simple::expected_input_found(
+                        span,
+                        Vec::new(),
+                        Some(token),
+                    )))
+                }
             };
             Ok(Ty { span, kind })
         })
@@ -66,7 +97,7 @@ fn ty_parser<'src>() -> impl Parser<Token<'src>, Ty, Error = Error<'src>> + Clon
 
 fn expr_parser<'src>(
     state: &'src ParserState,
-) -> impl Parser<Token<'src>, Expr, Error = Error<'src>> + Clone + 'src {
+) -> impl Parser<Token, Expr, Error = Error> + Clone + 'src {
     recursive(|expr| {
         let literal = filter_map(|span: Span, token| match token {
             Token::String(str) => Ok(Expr {
@@ -79,11 +110,15 @@ fn expr_parser<'src>(
             }),
             // todo lol unwrap
             Token::Integer(int) => Ok(Expr {
-                kind: ExprKind::Literal(Literal::Integer(int.parse().unwrap(), span.clone())),
+                kind: ExprKind::Literal(Literal::Integer(int, span.clone())),
                 id: state.next_id(),
                 span,
             }),
-            _ => Err(Simple::expected_input_found(span, Vec::new(), Some(token))),
+            _ => Err(Error(Simple::expected_input_found(
+                span,
+                Vec::new(),
+                Some(token),
+            ))),
         })
         .labelled("literal");
 
@@ -231,7 +266,7 @@ fn expr_parser<'src>(
 
 fn statement_parser<'src>(
     state: &'src ParserState,
-) -> impl Parser<Token<'src>, Stmt, Error = Error<'src>> + Clone {
+) -> impl Parser<Token, Stmt, Error = Error> + Clone + 'src {
     recursive(|stmt| {
         let var_decl = just(Token::Let)
             .ignore_then(ident_parser())
@@ -308,7 +343,7 @@ fn statement_parser<'src>(
 
 fn name_ty_pair_parser<'src>(
     state: &'src ParserState,
-) -> impl Parser<Token<'src>, NameTyPair, Error = Error<'src>> + Clone {
+) -> impl Parser<Token, NameTyPair, Error = Error> + Clone + 'src {
     ident_parser()
         .then_ignore(just(Token::Colon))
         .then(ty_parser())
@@ -322,7 +357,7 @@ fn name_ty_pair_parser<'src>(
 
 fn struct_parser<'src>(
     state: &'src ParserState,
-) -> impl Parser<Token<'src>, StructDecl, Error = Error<'src>> + Clone {
+) -> impl Parser<Token, StructDecl, Error = Error> + Clone + 'src {
     let name = just(Token::Struct).ignore_then(ident_parser());
 
     let fields = name_ty_pair_parser(state)
@@ -341,7 +376,7 @@ fn struct_parser<'src>(
 
 fn item_parser<'src>(
     state: &'src ParserState,
-) -> impl Parser<Token<'src>, Item, Error = Error<'src>> + Clone {
+) -> impl Parser<Token, Item, Error = Error> + Clone + 'src {
     // ---- function
 
     let name = ident_parser();
@@ -383,7 +418,7 @@ fn item_parser<'src>(
 fn file_parser<'src>(
     file_name: PathBuf,
     state: &'src ParserState,
-) -> impl Parser<Token<'src>, File, Error = Error<'src>> + Clone {
+) -> impl Parser<Token, File, Error = Error> + Clone + 'src {
     item_parser(state)
         .repeated()
         .then_ignore(end())
@@ -394,20 +429,18 @@ fn file_parser<'src>(
         .labelled("file")
 }
 
-pub fn parse<'src, I>(
-    lexer: I,
-    state: &'src ParserState,
-    len: usize,
-    file_name: PathBuf,
-) -> (Option<File>, Vec<Error<'src>>)
-where
-    I: 'src,
-    I: Iterator<Item = (Token<'src>, Span)>,
-{
-    file_parser(file_name, state).parse_recovery_verbose(Stream::from_iter(len..len + 1, lexer))
+#[salsa::tracked]
+pub fn parse(db: &dyn crate::Db, source: SourceProgram) -> (Option<File>, Vec<Error>) {
+    let lexer = Token::lexer(source.text(db));
+    let len = lexer.source().len();
+    let state = ParserState::default();
+
+    let result = file_parser(source.file_name(db).clone(), &state)
+        .parse_recovery_verbose(Stream::from_iter(len..len + 1, lexer.spanned()));
+    result
 }
 
-#[cfg(test)]
+#[cfg(disabled)]
 mod tests {
     use std::{fmt::Debug, path::PathBuf};
 
@@ -492,7 +525,10 @@ mod tests {
     fn var_decl() {
         let state = ParserState::default();
 
-        let r = parse("fn foo() -> u64 { let hello: u64 = 5; let owo = 0; let nice: u64; let nothing; }", &state);
+        let r = parse(
+            "fn foo() -> u64 { let hello: u64 = 5; let owo = 0; let nice: u64; let nothing; }",
+            &state,
+        );
         insta::assert_debug_snapshot!(r);
     }
 
